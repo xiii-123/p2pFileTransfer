@@ -1,0 +1,147 @@
+# P2P 文件传输系统配置文件示例
+# Example configuration file for P2P File Transfer System
+# 复制此文件为 config.yaml 并根据需要修改配置
+# Copy this file to config.yaml and modify as needed
+
+# 网络配置 / Network Configuration
+network:
+  # 监听端口 (0 = 自动分配随机端口)
+  # Listen port (0 = auto-assign random port)
+  port: 0
+
+  # 是否使用不安全的连接（仅用于开发测试）
+  # Use insecure connection (development/testing only)
+  insecure: false
+
+  # 随机种子（用于确定性密钥生成）
+  # Random seed for deterministic key generation
+  seed: 0
+
+  # Bootstrap 节点地址（用于初始网络连接）
+  # Bootstrap peer addresses for initial network connection
+  # 格式示例 / Example format:
+  # bootstrap_peers:
+  #   - /ip4/127.0.0.1/tcp/8001/p2p/QmPeerID123
+  #   - /ip4/192.168.1.100/tcp/8001/p2p/QmPeerID456
+  bootstrap_peers: []
+
+  # 协议前缀
+  # Protocol prefix
+  protocol_prefix: "/p2p-file-transfer"
+
+  # 启用自动刷新
+  # Enable auto refresh
+  auto_refresh: true
+
+  # DHT 命名空间
+  # DHT namespace
+  namespace: "p2p-file-transfer"
+
+# 存储配置 / Storage Configuration
+storage:
+  # Chunk 存储路径
+  # Chunk storage path
+  chunk_path: "files"
+
+  # Merkle 树块大小（字节）
+  # Merkle tree block size in bytes
+  # 推荐值 / Recommended: 262144 (256KB)
+  block_size: 262144
+
+  # 缓冲区数量
+  # Buffer number
+  buffer_number: 16
+
+# 性能配置 / Performance Configuration
+performance:
+  # 最大重试次数
+  # Max retry attempts
+  max_retries: 3
+
+  # 最大并发下载数
+  # Max concurrent downloads
+  max_concurrency: 16
+
+  # 请求超时（秒）
+  # Request timeout in seconds
+  request_timeout: 5
+
+  # 数据传输超时（秒）
+  # Data transfer timeout in seconds
+  data_timeout: 30
+
+  # DHT 操作超时（秒）
+  # DHT operation timeout in seconds
+  dht_timeout: 10
+
+# 日志配置 / Logging Configuration
+logging:
+  # 日志级别 (debug, info, warn, error)
+  # Log level (debug, info, warn, error)
+  level: "info"
+
+  # 日志格式 (json, text)
+  # Log format (json, text)
+  format: "text"
+
+# 反吸血虫配置 / Anti-Leecher Configuration
+anti_leecher:
+  # 是否启用反吸血虫机制
+  # Enable anti-leecher mechanism
+  enabled: true
+
+  # 最小成功率阈值（0.0-1.0）
+  # Minimum success rate threshold (0.0-1.0)
+  min_success_rate: 0.5
+
+  # 黑名单前的最小请求数
+  # Minimum requests before blacklisting
+  min_requests: 10
+
+# === 环境变量覆盖 / Environment Variable Overrides ===
+# 以下配置项可以通过环境变量覆盖：
+# The following configurations can be overridden via environment variables:
+#
+# P2P_PORT                    - network.port
+# P2P_INSECURE                - network.insecure
+# P2P_SEED                    - network.seed
+# P2P_BOOTSTRAP_PEERS         - network.bootstrap_peers (逗号分隔 / comma-separated)
+# P2P_PROTOCOL_PREFIX         - network.protocol_prefix
+# P2P_NAMESPACE               - network.namespace
+# P2P_CHUNK_PATH              - storage.chunk_path
+# P2P_BLOCK_SIZE              - storage.block_size
+# P2P_MAX_RETRIES             - performance.max_retries
+# P2P_MAX_CONCURRENCY          - performance.max_concurrency
+# P2P_REQUEST_TIMEOUT         - performance.request_timeout
+# P2P_DATA_TIMEOUT            - performance.data_timeout
+# P2P_DHT_TIMEOUT             - performance.dht_timeout
+# P2P_LOG_LEVEL               - logging.level
+# P2P_LOG_FORMAT              - logging.format
+# P2P_ANTI_LEECHER_ENABLED    - anti_leecher.enabled
+# P2P_MIN_SUCCESS_RATE        - anti_leecher.min_success_rate
+# P2P_MIN_REQUESTS            - anti_leecher.min_requests
+
+# === 使用示例 / Usage Examples ===
+#
+# 1. 开发环境（禁用安全性，启用调试日志）
+#    Development (disable security, enable debug logging):
+#    network.insecure: true
+#    logging.level: "debug"
+#
+# 2. 生产环境（启用所有安全特性）
+#    Production (enable all security features):
+#    network.insecure: false
+#    anti_leecher.enabled: true
+#    logging.level: "info"
+#
+# 3. 高性能配置
+#    High performance configuration:
+#    performance.max_concurrency: 32
+#    performance.max_retries: 5
+#    storage.buffer_number: 32
+#
+# 4. 低带宽环境
+#    Low bandwidth environment:
+#    performance.max_concurrency: 8
+#    performance.request_timeout: 10
+#    performance.data_timeout: 60

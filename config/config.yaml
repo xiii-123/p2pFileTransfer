@@ -1,0 +1,93 @@
+# P2P 文件传输系统配置文件
+# Configuration file for P2P File Transfer System
+
+# 网络配置 / Network Configuration
+network:
+  # 监听端口 (0 = 自动分配随机端口)
+  # Listen port (0 = auto-assign random port)
+  port: 0
+
+  # 是否使用不安全的连接（仅用于开发测试）
+  # Use insecure connection (development/testing only)
+  insecure: false
+
+  # 随机种子（用于确定性密钥生成）
+  # Random seed for deterministic key generation
+  seed: 0
+
+  # Bootstrap 节点地址（用于初始网络连接）
+  # Bootstrap peer addresses for initial network connection
+  # 格式示例 / Example format: /ip4/127.0.0.1/tcp/8001/p2p/QmPeerID
+  bootstrap_peers: []
+
+  # 协议前缀
+  # Protocol prefix
+  protocol_prefix: "/p2p-file-transfer"
+
+  # 启用自动刷新
+  # Enable auto refresh
+  auto_refresh: true
+
+  # DHT 命名空间
+  # DHT namespace
+  namespace: "p2p-file-transfer"
+
+# 存储配置 / Storage Configuration
+storage:
+  # Chunk 存储路径
+  # Chunk storage path
+  chunk_path: "files"
+
+  # Merkle 树块大小（字节）
+  # Merkle tree block size in bytes
+  block_size: 262144  # 256KB
+
+  # 缓冲区数量
+  # Buffer number
+  buffer_number: 16
+
+# 性能配置 / Performance Configuration
+performance:
+  # 最大重试次数
+  # Max retry attempts
+  max_retries: 3
+
+  # 最大并发下载数
+  # Max concurrent downloads
+  max_concurrency: 16
+
+  # 请求超时（秒）
+  # Request timeout in seconds
+  request_timeout: 5
+
+  # 数据传输超时（秒）
+  # Data transfer timeout in seconds
+  data_timeout: 30
+
+  # DHT 操作超时（秒）
+  # DHT operation timeout in seconds
+  dht_timeout: 10
+
+# 日志配置 / Logging Configuration
+logging:
+  # 日志级别 (debug, info, warn, error)
+  # Log level (debug, info, warn, error)
+  level: "info"
+
+  # 日志格式 (json, text)
+  # Log format (json, text)
+  format: "text"
+
+# 反吸血虫配置 / Anti-Leecher Configuration
+anti_leecher:
+  # 是否启用反吸血虫机制
+  # Enable anti-leecher mechanism
+  enabled: true
+
+  # 最小成功率阈值（0.0-1.0）
+  # Minimum success rate threshold (0.0-1.0)
+  min_success_rate: 0.5
+
+  # 黑名单前的最小请求数
+  # Minimum requests before blacklisting
+  min_requests: 10

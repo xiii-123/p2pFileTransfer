@@ -1,3 +1,34 @@
+// Package chameleonMerkleTree 提供 Chameleon 哈希和 Merkle 树实现
+//
+// 核心功能:
+//   - Chameleon 哈希: 基于椭圆曲线的可编辑哈希函数
+//   - Merkle 树: 构建和验证 Merkle 树
+//   - 文件分块: 将大文件分割为固定大小的块
+//   - 完整性验证: 使用根哈希验证文件完整性
+//
+// 主要组件:
+//   - ChameleonHash: Chameleon 哈希函数实现
+//   - ChameleonMerkleTree: Merkle 树结构
+//   - ChameleonPubKey: 公钥结构
+//   - ChameleonRandomNum: 随机数结构
+//
+// 特性:
+//   - 可编辑: 在已知私钥的情况下可以修改哈希值
+//   - 安全性: 基于椭圆曲线离散对数问题
+//   - 高效: 支持并发构建 Merkle 树
+//
+// 使用场景:
+//   - 区块链: 可编辑的区块链状态
+//   - 文件验证: P2P 文件传输中的完整性验证
+//   - 数据完整性: 任何需要可验证数据完整性的场景
+//
+// 配置:
+//   - BlockSize: 默认 256KB
+//   - BufferNumber: 默认 16
+//
+// 注意事项:
+//   - 私钥必须妥善保管，泄露后任何人都可以修改哈希
+//   - 修改哈希需要知道原始随机数
 package chameleonMerkleTree
 
 import (

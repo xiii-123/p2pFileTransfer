@@ -1,3 +1,27 @@
+// Package p2p 提供节点选择策略
+//
+// PeerSelector 功能:
+//   - 定义节点选择器接口
+//   - 随机选择: RandomPeerSelector
+//   - 轮询选择: RoundRobinPeerSelector
+//   - 可扩展: 支持自定义选择策略
+//
+// 选择策略:
+//   - Random: 随机选择一个节点，适合均匀分布请求
+//   - RoundRobin: 依次选择每个节点，适合负载均衡
+//
+// 使用示例:
+//
+//	selector := &RandomPeerSelector{}
+//	selected, err := selector.SelectPeer(peers)
+//	if err != nil {
+//	    return err
+//	}
+//	// 使用 selected 节点进行传输
+//
+// 注意事项:
+//   - Go 1.20+ 不需要手动调用 rand.Seed()
+//   - 轮询选择器在多个 goroutine 使用时不保证顺序
 package p2p
 
 import (
@@ -24,7 +48,7 @@ func (d *P2PService) SelectAvailablePeer(ctx context.Context, peers []peer.ID, c
 	// 创建副本，防止修改原 peers 切片
 	availablePeers := append([]peer.ID(nil), peers...)
 
-	var selector PeerSelector
+	selector := d.PeerSelector
 	for len(availablePeers) > 0 {
 		// 选择一个 peer
 		selected, err := selector.SelectPeer(availablePeers)
@@ -64,7 +88,7 @@ func (s *RandomPeerSelector) SelectPeer(peers []peer.ID) (peer.ID, error) {
 	if len(peers) == 0 {
 		return "", errors.New("no peers available")
 	}
-	rand.Seed(time.Now().UnixNano())
+	// Go 1.20+ 自动使用随机种子，不需要手动调用 rand.Seed
 	return peers[rand.Intn(len(peers))], nil
 }
 

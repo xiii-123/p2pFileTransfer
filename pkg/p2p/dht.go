@@ -1,3 +1,20 @@
+// Package p2p 提供 DHT (分布式哈希表) 相关功能
+//
+// DHT 功能:
+//   - 节点发现: 通过 Kademlia DHT 协议发现其他节点
+//   - 内容路由: 存储和检索键值对
+//   - Provider 系统: Chunk 提供者公告和查询
+//   - 自定义协议: Announce 和 Lookup 协议
+//
+// 主要功能:
+//   - Put: 在 DHT 中存储键值对
+//   - Get: 从 DHT 中检索值
+//   - Announce: 向网络公告自己是某个 Chunk 的提供者
+//   - Lookup: 查找特定 Chunk 的提供者
+//
+// 协议定义:
+//   - p2pFileTransfer/Announce/1.0.0: Chunk 公告协议
+//   - p2pFileTransfer/Lookup/1.0.0: 提供者查询协议
 package p2p
 
 import (
@@ -89,20 +106,40 @@ func newDHT(ctx context.Context, host host.Host, config P2PConfig) (*dht.IpfsDHT
 	}
 
 	// 遍历引导节点数组并尝试连接
+	successCount := 0
 	for _, peerAddr := range config.BootstrapPeers {
-		peerinfo, _ := peer.AddrInfoFromP2pAddr(peerAddr)
-		if err := host.Connect(ctx, *peerinfo); err != nil {
-			logrus.Printf("Error while connecting to node %q: %-v", peerinfo, err)
+		peerinfo, err := peer.AddrInfoFromP2pAddr(peerAddr)
+		if err != nil {
+			logrus.Warnf("Invalid bootstrap peer address %q: %v", peerAddr, err)
 			continue
-		} else {
-			logrus.Infof("Connection established with bootstrap node: %q",
-				*peerinfo)
-			kdht.RoutingTable().TryAddPeer(peerinfo.ID, true, true)
-			peers := kdht.RoutingTable().ListPeers()
-			logrus.Infof("RoutingTable size: %d", len(peers))
 		}
+
+		if err := host.Connect(ctx, *peerinfo); err != nil {
+			logrus.Warnf("Error while connecting to bootstrap node %q: %v", peerinfo, err)
+			continue
+		}
+
+		// 连接成功
+		successCount++
+		logrus.Infof("Connection established with bootstrap node: %q", peerinfo)
+
+		// 添加到路由表
+		if added, err := kdht.RoutingTable().TryAddPeer(peerinfo.ID, true, true); err != nil {
+			logrus.Warnf("Failed to add peer %q to routing table: %v", peerinfo.ID, err)
+		} else if added {
+			logrus.Debugf("Peer %q added to routing table", peerinfo.ID)
+		}
+
+		peers := kdht.RoutingTable().ListPeers()
+		logrus.Infof("RoutingTable size: %d", len(peers))
 	}
 
+	// 如果没有任何一个引导节点连接成功，返回错误
+	if successCount == 0 {
+		return kdht, fmt.Errorf("failed to connect to any bootstrap nodes (attempted %d)", len(config.BootstrapPeers))
+	}
+
+	logrus.Infof("Successfully connected to %d/%d bootstrap nodes", successCount, len(config.BootstrapPeers))
 	return kdht, nil
 }
 
@@ -144,11 +181,11 @@ func (d *P2PService) Get(ctx context.Context, key string) (string, error) {
 
 // TODO : 实现 QueryMetaData 方法
 func (d *P2PService) QueryMetaData(ctx context.Context, key string) (*file.MetaData, error) {
-	return nil, nil
+	return nil, errors.New("QueryMetaData is not implemented yet")
 }
 
 func (d *P2PService) QueryMetaDataHandler() {
-	return
+	// 未实现，保留占位符
 }
 
 // Announce 向网络中的节点宣布一个 fileInfo
@@ -168,24 +205,39 @@ func (d *P2PService) Announce(ctx context.Context, chunkHash string) error {
 		return errors.New("empty chunk hash")
 	}
 
-	// 使用通道接收结果
+	// 使用带超时的 context 来获取 closest peers
+	getPeersCtx, getPeersCancel := context.WithTimeout(ctx, 3*time.Second)
+	defer getPeersCancel()
+
+	// 使用通道接收结果（带缓冲，防止 goroutine 阻塞）
 	resultChan := make(chan []peer.ID, 1)
 	peers := []peer.ID{}
 
 	go func() {
-		peers, _ := d.DHT.GetClosestPeers(ctx, chunkHash)
-		resultChan <- peers
+		closestPeers, err := d.DHT.GetClosestPeers(getPeersCtx, chunkHash)
+		if err != nil {
+			logrus.Debugf("GetClosestPeers failed: %v", err)
+			closestPeers = []peer.ID{}
+		}
+		select {
+		case resultChan <- closestPeers:
+		case <-getPeersCtx.Done():
+			// Context 已取消，不发送结果
+			return
+		}
 	}()
 	logrus.Info("getting closest peers...")
 	select {
-	case <-time.After(3 * time.Second): // 超时
-		logrus.Warn("get closest peers timed out after 3 seconds, returning empty list")
+	case <-getPeersCtx.Done(): // 超时或取消
+		if getPeersCtx.Err() == context.DeadlineExceeded {
+			logrus.Warn("get closest peers timed out after 3 seconds, returning empty list")
+		}
 		peers = []peer.ID{} // 返回空切片
 	case peers = <-resultChan: // 正常结果
-		close(resultChan)
+		// channel 有缓冲，无需显式关闭
 	}
 
-	fmt.Printf("found %d closest peers", len(peers))
+	logrus.Infof("found %d closest peers", len(peers))
 
 	// 如果没有找到peer，至少通知自己
 	if len(peers) == 0 {
@@ -206,11 +258,13 @@ func (d *P2PService) Announce(ctx context.Context, chunkHash string) error {
 	}
 
 	var (
-		wg               sync.WaitGroup
-		successChan      = make(chan struct{}, len(peers))
-		errChan          = make(chan error, len(peers))
-		lowerCtx, cancel = context.WithCancel(ctx)
+		wg          sync.WaitGroup
+		successChan = make(chan struct{}, len(peers))
+		errChan     = make(chan error, len(peers))
+		lowerCtx    context.Context
+		cancel      context.CancelFunc
 	)
+	lowerCtx, cancel = context.WithCancel(ctx)
 	defer cancel()
 
 	// 对每个peer并行处理
@@ -293,6 +347,14 @@ func (d *P2PService) Announce(ctx context.Context, chunkHash string) error {
 func (d *P2PService) AnnounceHandler(ctx context.Context) {
 	d.Host.SetStreamHandler(AnnounceProtocol, func(s network.Stream) {
 		defer s.Close()
+
+		// 检查服务是否已关闭
+		select {
+		case <-d.Ctx.Done():
+			logrus.Debug("Service is shutting down, ignoring announce request")
+			return
+		default:
+		}
 
 		// 设置读超时
 		s.SetReadDeadline(time.Now().Add(readTimeout))
@@ -450,6 +512,15 @@ func (d *P2PService) Lookup(ctx context.Context, key string) ([]peer.AddrInfo, e
 func (d *P2PService) LookupHandler(ctx context.Context) {
 	d.Host.SetStreamHandler(LookupProtocol, func(s network.Stream) {
 		defer s.Close()
+
+		// 检查服务是否已关闭
+		select {
+		case <-d.Ctx.Done():
+			logrus.Debug("Service is shutting down, ignoring lookup request")
+			return
+		default:
+		}
+
 		s.SetReadDeadline(time.Now().Add(ioTimeout))
 		buf := bufio.NewReader(s)
 

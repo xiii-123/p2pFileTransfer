@@ -1,3 +1,33 @@
+// Package p2p 提供工具函数
+//
+// Utils 功能:
+//   - 主机创建: 创建 libp2p 主机实例
+//   - 地址生成: 生成监听地址
+//   - 密钥对生成: RSA 2048 位密钥对
+//
+// 主要函数:
+//   - newBasicHost: 创建基本 libp2p 主机
+//   - GetHostAddress: 获取主机地址字符串
+//
+// 安全选项:
+//   - 加密连接: 默认使用加密连接
+//   - 不安全模式: 可选禁用加密（仅用于测试）
+//
+// 使用示例:
+//
+//	host, err := newBasicHost(0, false, 0)
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	defer host.Close()
+//
+//	addr := GetHostAddress(host)
+//	fmt.Printf("Listening on: %s\n", addr)
+//
+// 注意事项:
+//   - 生产环境应始终使用加密连接
+//   - 不安全模式仅用于开发和测试
+//   - RSA 2048 提供足够的安全性
 package p2p
 
 import (
@@ -7,6 +37,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/multiformats/go-multiaddr"
+	"github.com/sirupsen/logrus"
 	"io"
 	mrand "math/rand"
 )
@@ -45,10 +76,20 @@ func newBasicHost(listenPort int, insecure bool, randseed int64) (host.Host, err
 
 func GetHostAddress(host host.Host) string {
 	// Build host multiaddress
-	hostAddr, _ := multiaddr.NewMultiaddr(fmt.Sprintf("/p2p/%s", host.ID()))
+	hostAddr, err := multiaddr.NewMultiaddr(fmt.Sprintf("/p2p/%s", host.ID()))
+	if err != nil {
+		logrus.Errorf("Failed to create host multiaddress: %v", err)
+		return ""
+	}
 
 	// Now we can build a full multiaddress to reach this host
 	// by encapsulating both addresses:
-	addr := host.Addrs()[0]
+	addrs := host.Addrs()
+	if len(addrs) == 0 {
+		logrus.Error("Host has no addresses")
+		return ""
+	}
+
+	addr := addrs[0]
 	return addr.Encapsulate(hostAddr).String()
 }

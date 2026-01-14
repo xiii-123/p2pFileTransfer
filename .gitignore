@@ -1,1 +1,5 @@
 files/
+p2p-server*
+*报告*
+*.exe
+.claude
