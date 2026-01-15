@@ -1,3 +1,0 @@
-This is a small test file for P2P file transfer testing.
-Second line of test data.
-Third line for testing.
