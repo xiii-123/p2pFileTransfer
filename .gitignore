@@ -6,9 +6,7 @@ p2p-server*
 .idea
 
 # Test outputs
-test_results/test_*.txt
-test_results/custom_metadata/
-TEST_RESULTS_CORRECTED.txt
+test_results/
 
 # Build artifacts
 *.bat
