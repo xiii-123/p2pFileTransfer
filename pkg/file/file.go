@@ -22,6 +22,7 @@ type MetaData struct {
 	FileSize    uint64      `json:"fileSize"`
 	FileName    string      `json:"fileName"`
 	Encryption  string      `json:"encryption"`
+	TreeType    string      `json:"treeType"` // Merkle tree type: "chameleon" | "regular"
 	Leaves      []ChunkData `json:"leaves"`
 }
 

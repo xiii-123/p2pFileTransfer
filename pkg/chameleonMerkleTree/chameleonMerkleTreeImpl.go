@@ -47,10 +47,37 @@ func NewChameleonMerkleTree(file io.ReadWriter, config *MerkleConfig, pubKey *Ch
 	}
 
 	// 使用变色龙哈希生成根节点
-
 	rX, rY, s, hX := ComputeHash(node.Hash, pubKey.pubX, pubKey.pubY)
 	return &ChameleonMerkleNode{
 		node: node,
+		hash: hX.Bytes(),
+		pk:   pubKey,
+		rn: &ChameleonRandomNum{
+			rX: rX,
+			rY: rY,
+			s:  s,
+		},
+	}, nil
+}
+
+// NewChameleonMerkleTreeFromHashes creates a Chameleon Merkle Tree from pre-computed SHA256 hashes
+// This is useful when you have already computed the chunk hashes and want to avoid re-reading the file
+func NewChameleonMerkleTreeFromHashes(hashes [][]byte, pubKey *ChameleonPubKey) (*ChameleonMerkleNode, error) {
+	if len(hashes) == 0 {
+		return nil, fmt.Errorf("no hashes provided")
+	}
+
+	// Build Regular Merkle Tree from the hashes
+	root, err := buildMerkleTreeFromLeafHashes(hashes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Merkle tree from hashes: %w", err)
+	}
+
+	// Apply Chameleon hash to the root
+	rX, rY, s, hX := ComputeHash(root.Hash, pubKey.pubX, pubKey.pubY)
+
+	return &ChameleonMerkleNode{
+		node: root,
 		hash: hX.Bytes(),
 		pk:   pubKey,
 		rn: &ChameleonRandomNum{

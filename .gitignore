@@ -4,3 +4,20 @@ p2p-server*
 *.exe
 .claude
 .idea
+
+# Test outputs
+test_results/test_*.txt
+test_results/custom_metadata/
+TEST_RESULTS_CORRECTED.txt
+
+# Build artifacts
+*.bat
+*.sh
+
+# Metadata and private keys (sensitive data)
+metadata/*.json
+metadata/*.key
+
+# Test reports
+TEST_REPORT.md
+TEST_SUMMARY.txt

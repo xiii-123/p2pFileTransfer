@@ -150,7 +150,7 @@ func setupLogging(cfg *config.Config) {
 
 // printBanner 打印欢迎横幅
 func printBanner() {
-	fmt.Println(`
+	fmt.Printf(`
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
 ║   P2P File Transfer System                                    ║
@@ -173,7 +173,7 @@ func printNodeInfo(service *p2p.P2PService) {
 	for _, addr := range addrs {
 		fmt.Printf("  - %s/p2p/%s\n", addr, peerID)
 	}
-	fmt.Println("========================\n")
+	fmt.Println("========================")
 }
 
 // printHelp 打印帮助信息
