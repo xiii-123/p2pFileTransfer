@@ -46,6 +46,13 @@ type Config struct {
 	Performance  PerformanceConfig  `mapstructure:"performance"`
 	Logging      LoggingConfig      `mapstructure:"logging"`
 	AntiLeecher  AntiLeecherConfig  `mapstructure:"anti_leecher"`
+	HTTP         HTTPConfig         `mapstructure:"http"`
+}
+
+// HTTPConfig HTTP API配置
+type HTTPConfig struct {
+	Port                  int    `mapstructure:"port"`
+	MetadataStoragePath   string `mapstructure:"metadata_path"`
 }
 
 // NetworkConfig 网络配置
@@ -168,6 +175,10 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("anti_leecher.min_success_rate", 0.5)
 	v.SetDefault("anti_leecher.min_requests", 10)
 	v.SetDefault("anti_leecher.blacklist_timeout", 3600) // 1 hour
+
+	// HTTP配置默认值
+	v.SetDefault("http.port", 8080)
+	v.SetDefault("http.metadata_path", "metadata")
 }
 
 // bindEnvVars 绑定环境变量
@@ -199,6 +210,8 @@ func bindEnvVars(v *viper.Viper) {
 		"anti_leecher.min_success_rate": "MIN_SUCCESS_RATE",
 		"anti_leecher.min_requests": "MIN_REQUESTS",
 		"anti_leecher.blacklist_timeout": "BLACKLIST_TIMEOUT",
+		"http.port":                 "HTTP_PORT",
+		"http.metadata_path":        "METADATA_PATH",
 	}
 
 	for configKey, envKey := range bindings {

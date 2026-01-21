@@ -50,6 +50,21 @@
 - **Chunk 公告** - 广播文件块可用性
 - **Provider 查询** - 查找文件块提供者
 
+### 🌍 HTTP API 服务
+
+完整的 RESTful API，支持文件上传、下载和分片操作：
+
+- **文件管理** - 上传、下载、查询文件信息
+- **分片操作** - 按需下载单个分片，支持断点续传
+- **节点管理** - 查看节点信息和对等连接
+- **DHT 操作** - 查询提供者、公告内容
+
+**新功能** ⭐:
+- `GET /api/v1/chunks/{hash}/download` - 下载单个分片
+- `GET /api/v1/chunks/{hash}` - 查询分片信息
+
+详细 API 文档: [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+
 ---
 
 ## 📦 安装
@@ -72,6 +87,7 @@ go mod download
 # 构建 CLI 工具和服务器
 go build -o bin/p2p ./cmd/p2p
 go build -o bin/p2p-server ./cmd/server
+go build -o bin/api.exe ./cmd/api
 ```
 
 ### 快速验证
@@ -152,6 +168,39 @@ func main() {
     // ... (使用 API 进行文件操作)
 }
 ```
+
+### 4. 使用 HTTP API
+
+```bash
+# 启动 HTTP API 服务（默认端口 8080）
+./bin/api.exe
+
+# 上传文件
+curl -X POST http://localhost:8080/api/v1/files/upload \
+  -F "file=@myfile.txt" \
+  -F "tree_type=chameleon" \
+  -F "description=My file"
+
+# 查询文件信息
+curl http://localhost:8080/api/v1/files/{cid}
+
+# 下载完整文件
+curl http://localhost:8080/api/v1/files/{cid}/download -o downloaded.txt
+
+# 查询分片信息（新功能）
+curl http://localhost:8080/api/v1/chunks/{chunk_hash}
+
+# 下载单个分片（新功能）
+curl http://localhost:8080/api/v1/chunks/{chunk_hash}/download -o chunk.bin
+```
+
+**分片下载功能**:
+- 支持断点续传 - 只下载需要的分片
+- 并行下载 - 同时下载多个分片提高速度
+- 智能缓存 - P2P 下载的分片自动缓存
+- 带宽优化 - 按需下载，节省流量
+
+详细文档: [docs/CHUNK_DOWNLOAD_FEATURE_SUMMARY.md](docs/CHUNK_DOWNLOAD_FEATURE_SUMMARY.md)
 
 ---
 
@@ -292,8 +341,14 @@ p2pFileTransfer/
 │   │   └── file/                   # 文件操作命令
 │   │       ├── cmd.go
 │   │       └── upload.go           # 上传实现
-│   └── server/
-│       └── main.go                 # 服务入口
+│   ├── api/                        # HTTP API 服务 ⭐
+│   │   ├── main.go                 # API 入口
+│   │   ├── server.go               # 服务器配置
+│   │   └── handlers.go             # API 处理函数
+│   ├── server/
+│   │   └── main.go                 # 服务入口
+│   ├── multinode/                  # 多节点测试工具
+│   └── test_chunk_download/        # 分片下载测试程序
 ├── pkg/
 │   ├── p2p/                         # P2P 网络核心
 │   ├── file/                        # 文件元数据
@@ -305,11 +360,22 @@ p2pFileTransfer/
 ├── config/
 │   ├── config.yaml                 # 配置文件
 │   └── config.example.yaml         # 配置模板
+├── docs/                           # 文档目录 ⭐
+│   ├── CHUNK_DOWNLOAD_FEATURE_SUMMARY.md
+│   └── MANUAL_TEST_GUIDE.md
+├── tests/                          # 测试脚本 ⭐
+│   ├── quick-test.ps1              # 快速验证脚本
+│   └── test-chunk-download.ps1     # 完整测试脚本
 ├── test/                            # 测试套件
 ├── doc/                             # 开发文档
+├── bin/                             # 编译输出
+│   ├── api.exe                     # HTTP API 服务器
+│   ├── p2p.exe                     # CLI 工具
+│   └── test_chunk.exe              # 测试程序
 ├── go.mod
 ├── go.sum
 ├── README.md
+├── API_DOCUMENTATION.md            # API 完整文档
 ├── CONFIGURATION_GUIDE.md
 └── build.bat                        # 构建脚本
 ```
@@ -333,6 +399,19 @@ go test ./test -v -run TestMultiNode -timeout 10m
 # 使用脚本运行
 ./run_multinode_tests.sh      # Linux/macOS
 run_multinode_tests.bat       # Windows
+```
+
+### 分片下载功能测试
+
+```powershell
+# 快速验证（5分钟）
+.\tests\quick-test.ps1
+
+# 完整测试（15分钟）
+.\tests\test-chunk-download.ps1
+
+# 手动测试
+# 参考 docs/MANUAL_TEST_GUIDE.md
 ```
 
 ### 测试覆盖
@@ -382,7 +461,13 @@ run_multinode_tests.bat       # Windows
 
 ## 📚 文档
 
-- [CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md) - 完整配置指南
+### 核心文档
+- [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - 完整 API 参考
+- [CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md) - 配置指南
+- [docs/CHUNK_DOWNLOAD_FEATURE_SUMMARY.md](docs/CHUNK_DOWNLOAD_FEATURE_SUMMARY.md) - 分片下载功能说明
+- [docs/MANUAL_TEST_GUIDE.md](docs/MANUAL_TEST_GUIDE.md) - 手动测试指南
+
+### 测试文档
 - [test/README.md](test/README.md) - 测试文档
 - [test/MULTINODE_TESTS.md](test/MULTINODE_TESTS.md) - 多节点测试
 
@@ -433,4 +518,21 @@ run_multinode_tests.bat       # Windows
 
 ---
 
-**当前版本**: v1.0.0 | **最后更新**: 2026-01-15 | **状态**: 生产就绪 ✅
+**当前版本**: v1.1.0 | **最后更新**: 2026-01-21 | **状态**: 生产就绪 ✅
+
+### 更新日志
+
+#### v1.1.0 (2026-01-21)
+- ⭐ **新增**: HTTP API 服务
+- ⭐ **新增**: 分片下载功能 - 支持按需下载单个分片
+- ⭐ **新增**: 分片信息查询 API
+- 🔧 **改进**: 自动缓存机制 - P2P 下载的分片自动缓存
+- 📝 **新增**: 完整的 API 文档和测试指南
+- ✅ **测试**: 新增自动化测试脚本
+
+#### v1.0.0 (2026-01-15)
+- 🎉 初始版本发布
+- ✅ CLI 命令行工具
+- ✅ 双 Merkle 树支持（Regular 和 Chameleon）
+- ✅ P2P 网络功能
+- ✅ 完整的测试覆盖

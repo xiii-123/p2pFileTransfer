@@ -124,33 +124,54 @@ func (s *LatencyBasedSelector) SelectPeer(peers []peer.ID) (peer.ID, error) {
 		err  error
 	}
 
+	// 创建父 context 用于控制所有 goroutine
+	ctx, cancel := context.WithTimeout(context.Background(), s.Timeout*time.Minute)
+	defer cancel() // 确保在函数返回时取消所有 goroutine
+
 	resultCh := make(chan result, len(peers))
 	for _, p := range peers {
 		go func(p peer.ID) {
 			start := time.Now()
-			ctx, cancel := context.WithTimeout(context.Background(), s.Timeout)
-			defer cancel()
-			stream, err := s.Host.NewStream(ctx, p, "/ping/1.0.0")
+			// 为每个 goroutine 创建独立的超时 context
+			pingCtx, pingCancel := context.WithTimeout(ctx, s.Timeout)
+			defer pingCancel()
+
+			stream, err := s.Host.NewStream(pingCtx, p, "/ping/1.0.0")
 			if err != nil {
-				resultCh <- result{p, 0, err}
+				select {
+				case resultCh <- result{p, 0, err}:
+				case <-ctx.Done():
+					// 父 context 已取消，放弃发送结果
+				}
 				return
 			}
 			stream.Close()
-			resultCh <- result{p, time.Since(start), nil}
+
+			select {
+			case resultCh <- result{p, time.Since(start), nil}:
+			case <-ctx.Done():
+				// 父 context 已取消，放弃发送结果
+			}
 		}(p)
 	}
 
 	var best peer.ID
 	bestRTT := time.Hour
 
+	// 收集所有结果或直到 context 取消
 	for i := 0; i < len(peers); i++ {
-		res := <-resultCh
-		if res.err != nil {
-			continue
-		}
-		if res.rtt < bestRTT {
-			best = res.peer
-			bestRTT = res.rtt
+		select {
+		case res := <-resultCh:
+			if res.err != nil {
+				continue
+			}
+			if res.rtt < bestRTT {
+				best = res.peer
+				bestRTT = res.rtt
+			}
+		case <-ctx.Done():
+			// 超时或取消，退出循环
+			break
 		}
 	}
 

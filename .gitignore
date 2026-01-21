@@ -1,16 +1,30 @@
-files/
-doc/
-p2p-server*
+# Binary files
+bin/
 *.exe
-.claude
-.idea
+*.dll
+*.so
+*.dylib
+p2p-server*
 
 # Test outputs
 test_results/
+test_*_results.txt
+*.log
 
 # Build artifacts
 *.bat
 *.sh
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+*~
+nul
+
+# Test directories
+test_*/
+quick_test/
 
 # Metadata and private keys (sensitive data)
 metadata/*.json
@@ -19,3 +33,16 @@ metadata/*.key
 # Test reports
 TEST_REPORT.md
 TEST_SUMMARY.txt
+
+# IDE files
+.claude
+.idea
+.vscode/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Claude Code settings
+.claude/settings.local.json

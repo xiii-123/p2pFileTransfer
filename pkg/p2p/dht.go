@@ -188,10 +188,10 @@ func (d *P2PService) QueryMetaDataHandler() {
 	// 未实现，保留占位符
 }
 
-// Announce 向网络中的节点宣布一个 fileInfo
+// Announce 向网络中的节点宣布一个 chunkHash
 // 参数:
 //   - ctx: 上下文，用于控制生命周期
-//   - fileInfo: 要宣布的 fileInfo
+//   - chunkHash: 要宣布的 chunkHash
 //
 // 返回值:
 //   - error: 错误信息

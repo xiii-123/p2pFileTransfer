@@ -192,23 +192,34 @@ func (cm *ConnManager) GetSuccessRate(p peer.ID) float64 {
 // ShouldBlacklist 判断是否应该将节点加入黑名单
 // 当失败率超过阈值且失败次数足够多时返回 true
 func (cm *ConnManager) ShouldBlacklist(p peer.ID, threshold float64, minRequests int64) bool {
-	stats := cm.GetPeerStats(p)
-	if stats == nil || stats.TotalRequests < minRequests {
+	// 在持有锁的情况下完成所有检查和修改，避免竞态条件
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+
+	info, exists := cm.peerInfo[p]
+	if !exists {
 		return false
 	}
 
-	successRate := float64(stats.SuccessfulReqs) / float64(stats.TotalRequests)
+	// 读取统计信息
+	info.mu.RLock()
+	statsCopy := info.stats
+	totalRequests := statsCopy.TotalRequests
+	successfulReqs := statsCopy.SuccessfulReqs
+	info.mu.RUnlock()
+
+	if totalRequests < minRequests {
+		return false
+	}
+
+	successRate := float64(successfulReqs) / float64(totalRequests)
 	if successRate < threshold {
 		// 加入黑名单
-		cm.mu.Lock()
-		if info, exists := cm.peerInfo[p]; exists {
-			info.mu.Lock()
-			info.isBlacklisted = true
-			info.mu.Unlock()
-			logrus.Warnf("Peer %s blacklisted due to low success rate: %.2f%% (%d/%d)",
-				p, successRate*100, stats.SuccessfulReqs, stats.TotalRequests)
-		}
-		cm.mu.Unlock()
+		info.mu.Lock()
+		info.isBlacklisted = true
+		info.mu.Unlock()
+		logrus.Warnf("Peer %s blacklisted due to low success rate: %.2f%% (%d/%d)",
+			p, successRate*100, successfulReqs, totalRequests)
 		return true
 	}
 

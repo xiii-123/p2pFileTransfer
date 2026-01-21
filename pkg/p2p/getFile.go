@@ -455,6 +455,9 @@ func (p *P2PService) GetFileOrderedWithProgress(ctx context.Context, fileHash st
 	}
 
 	for i, data := range results {
+		if data == nil {
+			return fmt.Errorf("chunk %d data is nil (download may have failed)", i)
+		}
 		if _, err := f.Write(data); err != nil {
 			return fmt.Errorf("write chunk %d failed: %w", i, err)
 		}
