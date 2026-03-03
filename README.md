@@ -404,46 +404,7 @@ p2pFileTransfer/
 
 ---
 
-## 🧪 测试
 
-### 运行测试
-
-```bash
-# 运行所有测试
-go test ./test -v
-
-# 运行单元测试（快速）
-go test ./test -v -short
-
-# 运行多节点测试
-go test ./test -v -run TestMultiNode -timeout 10m
-
-# 使用脚本运行
-./run_multinode_tests.sh      # Linux/macOS
-run_multinode_tests.bat       # Windows
-```
-
-### 分片下载功能测试
-
-```powershell
-# 快速验证（5分钟）
-.\tests\quick-test.ps1
-
-# 完整测试（15分钟）
-.\tests\test-chunk-download.ps1
-
-# 手动测试
-# 参考 docs/MANUAL_TEST_GUIDE.md
-```
-
-### 测试覆盖
-
-- ✅ 40+ 测试用例
-- ✅ 7 个多节点集成测试
-- ✅ 100% 通过率
-- ✅ 并发安全验证 (`-race`)
-
----
 
 ## 📊 技术栈
 
