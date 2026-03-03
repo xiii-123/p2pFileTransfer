@@ -91,3 +91,17 @@ anti_leecher:
   # 黑名单前的最小请求数
   # Minimum requests before blacklisting
   min_requests: 10
+
+# 变色龙哈希配置 / Chameleon Hash Configuration
+chameleon:
+  # 全局私钥（hex编码的32字节）
+  # 警告：仅用于测试环境，生产环境请使用 private_key_file
+  # Global private key (hex-encoded 32 bytes)
+  # WARNING: Only for testing, use private_key_file in production
+  private_key: ""
+
+  # 私钥文件路径（推荐）
+  # 文件应包含: {"privateKey": "hex编码的私钥"}
+  # Private key file path (recommended)
+  # File should contain: {"privateKey": "hex-encoded private key"}
+  private_key_file: ""

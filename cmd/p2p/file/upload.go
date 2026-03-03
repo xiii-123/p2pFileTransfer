@@ -148,8 +148,9 @@ func uploadFileChameleon(ctx context.Context, filePath string) error {
 		}
 	}
 
-	// 9. Get random number from Chameleon Merkle Tree
+	// 9. Get random number and regular root hash from Chameleon Merkle Tree
 	randomNum := cmt.GetRandomNumber()
+	regularRootHash := cmt.GetRootHash()
 
 	// 10. Serialize public key and random number for MetaData
 	publicKeySerialized := pubKey.Serialize()
@@ -159,15 +160,16 @@ func uploadFileChameleon(ctx context.Context, filePath string) error {
 	leaves := convertChunksToChunkData(chunks)
 
 	metadata := &file.MetaData{
-		RootHash:    cid,
-		RandomNum:   randomNumSerialized,
-		PublicKey:   publicKeySerialized,
-		Description: description,
-		FileSize:    uint64(fileSize),
-		FileName:    fileName,
-		Encryption:  "none",
-		TreeType:    "chameleon",
-		Leaves:      leaves,
+		RootHash:        cid,
+		RegularRootHash: regularRootHash,
+		RandomNum:       randomNumSerialized,
+		PublicKey:       publicKeySerialized,
+		Description:     description,
+		FileSize:        uint64(fileSize),
+		FileName:        fileName,
+		Encryption:      "none",
+		TreeType:        "chameleon",
+		Leaves:          leaves,
 	}
 
 	// 11. Save MetaData and private key
@@ -175,7 +177,7 @@ func uploadFileChameleon(ctx context.Context, filePath string) error {
 		return err
 	}
 
-	printUploadSummary(fileName, fileSize, len(chunks), cid, "chameleon")
+	printUploadSummary(fileName, fileSize, len(chunks), cid, "chameleon", regularRootHash)
 	return nil
 }
 
@@ -252,7 +254,7 @@ func uploadFileRegular(ctx context.Context, filePath string) error {
 		return err
 	}
 
-	printUploadSummary(fileName, fileSize, len(chunks), cid, "regular")
+	printUploadSummary(fileName, fileSize, len(chunks), cid, "regular", nil)
 	return nil
 }
 
@@ -321,11 +323,14 @@ func saveMetadata(metadata *file.MetaData, cid []byte) error {
 	return nil
 }
 
-func printUploadSummary(fileName string, fileSize int64, chunkCount int, cid []byte, treeType string) {
+func printUploadSummary(fileName string, fileSize int64, chunkCount int, cid []byte, treeType string, regularRootHash []byte) {
 	fmt.Printf("\n✓ Upload complete!\n")
 	fmt.Printf("  File: %s\n", fileName)
 	fmt.Printf("  Size: %d bytes\n", fileSize)
 	fmt.Printf("  Chunks: %d\n", chunkCount)
 	fmt.Printf("  Tree Type: %s\n", treeType)
 	fmt.Printf("  CID: %x\n", cid)
+	if treeType == "chameleon" && regularRootHash != nil {
+		fmt.Printf("  Regular Root Hash: %x\n", regularRootHash)
+	}
 }

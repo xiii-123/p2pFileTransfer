@@ -63,6 +63,7 @@ func (s *Server) registerRoutes() {
 
 	// 文件操作
 	s.router.HandleFunc("POST /api/v1/files/upload", s.handleFileUpload)
+	s.router.HandleFunc("POST /api/v1/files/update", s.handleFileUpdate)
 	s.router.HandleFunc("GET /api/v1/files/{cid}", s.handleFileInfo)
 	s.router.HandleFunc("GET /api/v1/files/{cid}/download", s.handleFileDownload)
 
@@ -96,6 +97,7 @@ func (s *Server) Start() error {
 	fmt.Println("Available endpoints:")
 	fmt.Println("  GET    /api/health")
 	fmt.Println("  POST   /api/v1/files/upload")
+	fmt.Println("  POST   /api/v1/files/update")
 	fmt.Println("  GET    /api/v1/files/{cid}")
 	fmt.Println("  GET    /api/v1/files/{cid}/download")
 	fmt.Println("  GET    /api/v1/chunks/{hash}")

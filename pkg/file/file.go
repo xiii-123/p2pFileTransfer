@@ -15,15 +15,16 @@
 package file
 
 type MetaData struct {
-	RootHash    []byte      `json:"rootHash"`
-	RandomNum   []byte      `json:"randomNum"`
-	PublicKey   []byte      `json:"publicKey"`
-	Description string      `json:"description"`
-	FileSize    uint64      `json:"fileSize"`
-	FileName    string      `json:"fileName"`
-	Encryption  string      `json:"encryption"`
-	TreeType    string      `json:"treeType"` // Merkle tree type: "chameleon" | "regular"
-	Leaves      []ChunkData `json:"leaves"`
+	RootHash        []byte      `json:"rootHash"`                   // 变色龙哈希（CID）或常规Merkle根哈希
+	RegularRootHash []byte      `json:"regularRootHash,omitempty"`  // 常规Merkle根哈希（仅chameleon模式需要）
+	RandomNum       []byte      `json:"randomNum,omitempty"`        // 随机数（仅chameleon模式）
+	PublicKey       []byte      `json:"publicKey,omitempty"`        // 公钥（仅chameleon模式）
+	Description     string      `json:"description,omitempty"`      // 文件描述
+	FileSize        uint64      `json:"fileSize"`                   // 文件大小（字节）
+	FileName        string      `json:"fileName"`                   // 文件名
+	Encryption      string      `json:"encryption,omitempty"`       // 加密方式
+	TreeType        string      `json:"treeType"`                   // Merkle树类型: "chameleon" | "regular"
+	Leaves          []ChunkData `json:"leaves"`                     // 所有chunk的哈希列表
 }
 
 type ChunkData struct {

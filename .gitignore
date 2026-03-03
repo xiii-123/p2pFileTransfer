@@ -34,6 +34,13 @@ metadata/*.key
 TEST_REPORT.md
 TEST_SUMMARY.txt
 
+# Test configuration with private keys (security)
+test/config/test.env
+test/config/test_config.json
+test/config/test_private_key.json
+test/config/*.key
+test/config/*_private_key.json
+
 # IDE files
 .claude
 .idea

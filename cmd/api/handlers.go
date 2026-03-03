@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"p2pFileTransfer/pkg/chameleonMerkleTree"
 	"p2pFileTransfer/pkg/file"
 )
@@ -156,6 +157,9 @@ func (s *Server) uploadFileChameleon(ctx context.Context, fileReader io.Reader, 
 	cid := cmt.GetChameleonHash()
 	cidHex := hex.EncodeToString(cid)
 
+	// 获取常规 Merkle 根哈希（用于后续文件更新）
+	regularRootHash := cmt.GetRootHash()
+
 	// 获取所有分块哈希
 	chunkHashes := cmt.GetAllLeavesHashes()
 
@@ -192,15 +196,16 @@ func (s *Server) uploadFileChameleon(ctx context.Context, fileReader io.Reader, 
 
 	// 生成元数据
 	metadata := &file.MetaData{
-		RootHash:    cid,
-		RandomNum:   cmt.GetRandomNumber().Serialize(),
-		PublicKey:   cmt.GetPublicKey().Serialize(),
-		Description: description,
-		FileName:    fileName,
-		FileSize:    uint64(size),
-		Encryption:  "none",
-		TreeType:    "chameleon",
-		Leaves:      convertToChunkData(chunkHashes, int(config.BlockSize)),
+		RootHash:        cid,
+		RegularRootHash: regularRootHash,
+		RandomNum:       cmt.GetRandomNumber().Serialize(),
+		PublicKey:       cmt.GetPublicKey().Serialize(),
+		Description:     description,
+		FileName:        fileName,
+		FileSize:        uint64(size),
+		Encryption:      "none",
+		TreeType:        "chameleon",
+		Leaves:          convertToChunkData(chunkHashes, int(config.BlockSize)),
 	}
 
 	// 保存元数据
@@ -209,12 +214,15 @@ func (s *Server) uploadFileChameleon(ctx context.Context, fileReader io.Reader, 
 	}
 
 	return map[string]interface{}{
-		"cid":        cidHex,
-		"fileName":   fileName,
-		"treeType":   "chameleon",
-		"chunkCount": len(chunkHashes),
-		"fileSize":   size,
-		"message":    "File uploaded successfully with Chameleon Merkle Tree",
+		"cid":             cidHex,
+		"fileName":        fileName,
+		"treeType":        "chameleon",
+		"regularRootHash": hex.EncodeToString(regularRootHash),
+		"randomNum":       hex.EncodeToString(cmt.GetRandomNumber().Serialize()),
+		"publicKey":       hex.EncodeToString(cmt.GetPublicKey().Serialize()),
+		"chunkCount":      len(chunkHashes),
+		"fileSize":        size,
+		"message":         "File uploaded successfully with Chameleon Merkle Tree",
 	}, nil
 }
 
@@ -891,4 +899,257 @@ func (s *Server) loadMetadata(cid string) (*file.MetaData, error) {
 	}
 
 	return &metadata, nil
+}
+
+// handleFileUpdate 处理文件更新请求
+func (s *Server) handleFileUpdate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		s.respondError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	// 解析表单
+	err := r.ParseMultipartForm(MaxUploadSize)
+	if err != nil {
+		s.respondError(w, http.StatusBadRequest, fmt.Sprintf("Failed to parse form: %v", err))
+		return
+	}
+
+	// 获取文件
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		s.respondError(w, http.StatusBadRequest, fmt.Sprintf("Failed to get file: %v", err))
+		return
+	}
+	defer file.Close()
+
+	// 获取必需参数
+	cid := r.FormValue("cid")
+	if cid == "" {
+		s.respondError(w, http.StatusBadRequest, "CID is required")
+		return
+	}
+
+	regularRootHash := r.FormValue("regular_root_hash")
+	if regularRootHash == "" {
+		s.respondError(w, http.StatusBadRequest, "regular_root_hash is required")
+		return
+	}
+
+	randomNumStr := r.FormValue("random_num")
+	if randomNumStr == "" {
+		s.respondError(w, http.StatusBadRequest, "random_num is required")
+		return
+	}
+
+	publicKeyStr := r.FormValue("public_key")
+	if publicKeyStr == "" {
+		s.respondError(w, http.StatusBadRequest, "public_key is required")
+		return
+	}
+
+	// 获取私钥（优先从请求参数，其次从配置文件）
+	privKey := r.FormValue("private_key")
+	if privKey == "" {
+		privKey = s.config.Chameleon.PrivateKey
+		if privKey == "" && s.config.Chameleon.PrivateKeyFile != "" {
+			// 从文件读取
+			loadedKey, err := s.loadPrivateKeyFromFile(s.config.Chameleon.PrivateKeyFile)
+			if err != nil {
+				s.respondError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to load private key: %v", err))
+				return
+			}
+			privKey = loadedKey
+		}
+	}
+
+	if privKey == "" {
+		s.respondError(w, http.StatusBadRequest, "private_key is required (either in request or config)")
+		return
+	}
+
+	// 调用更新逻辑
+	result, err := s.updateFileChameleon(r.Context(), file, header.Filename, cid, regularRootHash, randomNumStr, publicKeyStr, privKey)
+	if err != nil {
+		s.respondError(w, http.StatusInternalServerError, fmt.Sprintf("Update failed: %v", err))
+		return
+	}
+
+	s.respondSuccess(w, result)
+}
+
+// updateFileChameleon 更新变色龙文件
+func (s *Server) updateFileChameleon(
+	ctx context.Context,
+	fileReader io.Reader,
+	fileName, cid, regularRootHashStr, randomNumStr, publicKeyStr, privKeyStr string,
+) (map[string]interface{}, error) {
+
+	// 1. 解码参数
+	privKey, err := hex.DecodeString(privKeyStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid private key format: %w", err)
+	}
+
+	regularRootHash, err := hex.DecodeString(regularRootHashStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid regular_root_hash format: %w", err)
+	}
+
+	randomNumBytes, err := hex.DecodeString(randomNumStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid random_num format: %w", err)
+	}
+
+	publicKeyBytes, err := hex.DecodeString(publicKeyStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid public_key format: %w", err)
+	}
+
+	// 2. 反序列化参数
+	pubKey, err := chameleonMerkleTree.DeserializeChameleonPubKey(publicKeyBytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to deserialize public key: %w", err)
+	}
+
+	randomNum, err := chameleonMerkleTree.DeserializeChameleonRandomNum(randomNumBytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to deserialize random number: %w", err)
+	}
+
+	// 3. 创建临时文件
+	tmpFile, err := os.CreateTemp("", "update-*.tmp")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(tmpFile.Name())
+	defer tmpFile.Close()
+
+	// 4. 写入新文件内容
+	size, err := io.Copy(tmpFile, fileReader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write file: %w", err)
+	}
+
+	// 5. 重置文件指针
+	if _, err := tmpFile.Seek(0, 0); err != nil {
+		return nil, fmt.Errorf("failed to seek file: %w", err)
+	}
+
+	// 6. 获取 CID（变色龙哈希）
+	cidBytes, err := hex.DecodeString(cid)
+	if err != nil {
+		return nil, fmt.Errorf("invalid CID format: %w", err)
+	}
+
+	// 7. 调用 UpdateChameleonMerkleTree
+	config := &chameleonMerkleTree.MerkleConfig{
+		BlockSize:    DefaultBlockSize,
+		BufferNumber: DefaultBufferNumber,
+	}
+
+	newTree, err := chameleonMerkleTree.UpdateChameleonMerkleTree(
+		tmpFile,
+		config,
+		privKey,
+		regularRootHash, // prevText
+		cidBytes,        // chameleonHash
+		randomNum,
+		pubKey,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update merkle tree: %w", err)
+	}
+
+	// 8. 验证 CID 保持不变
+	newCID := newTree.GetChameleonHash()
+	if !bytes.Equal(newCID, cidBytes) {
+		return nil, fmt.Errorf("CID mismatch after update (expected %x, got %x)", cidBytes, newCID)
+	}
+
+	// 9. 计算新文件的 chunk 哈希
+	tmpFile.Seek(0, 0)
+	chunkHashes := newTree.GetAllLeavesHashes()
+
+	// 10. 保存新的 chunk 文件
+	chunkPath := s.config.Storage.ChunkPath
+	buffer := make([]byte, config.BlockSize)
+
+	for i, chunkHash := range chunkHashes {
+		// 重置文件指针到chunk起始位置
+		offset := int64(i) * int64(config.BlockSize)
+		if _, err := tmpFile.Seek(offset, 0); err != nil {
+			return nil, fmt.Errorf("failed to seek to chunk %d: %w", i, err)
+		}
+
+		// 读取chunk数据
+		n, err := tmpFile.Read(buffer)
+		if err != nil && err != io.EOF {
+			return nil, fmt.Errorf("failed to read chunk %d: %w", i, err)
+		}
+		chunkData := buffer[:n]
+
+		// 保存chunk到文件
+		chunkFile := filepath.Join(chunkPath, hex.EncodeToString(chunkHash))
+		if err := os.WriteFile(chunkFile, chunkData, 0644); err != nil {
+			return nil, fmt.Errorf("failed to save chunk %d: %w", i, err)
+		}
+
+		// Announce 到 DHT
+		chunkHashStr := hex.EncodeToString(chunkHash)
+		if err := s.p2pService.Announce(ctx, chunkHashStr); err != nil {
+			logrus.Warnf("Failed to announce chunk %d: %v", i, err)
+		}
+	}
+
+	// 11. 加载并更新元数据
+	metadata, err := s.loadMetadata(cid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load metadata: %w", err)
+	}
+
+	// 更新元数据
+	metadata.RegularRootHash = newTree.GetRootHash()
+	metadata.RandomNum = newTree.GetRandomNumber().Serialize()
+	metadata.FileSize = uint64(size)
+	metadata.FileName = fileName
+	metadata.Leaves = convertToChunkData(chunkHashes, int(config.BlockSize))
+
+	// 保存元数据
+	if err := s.saveMetadata(cid, metadata); err != nil {
+		return nil, fmt.Errorf("failed to save metadata: %w", err)
+	}
+
+	// 12. 返回结果
+	return map[string]interface{}{
+		"cid":             cid,
+		"fileName":        fileName,
+		"treeType":        "chameleon",
+		"regularRootHash": hex.EncodeToString(newTree.GetRootHash()),
+		"randomNum":       hex.EncodeToString(newTree.GetRandomNumber().Serialize()),
+		"publicKey":       hex.EncodeToString(pubKey.Serialize()),
+		"chunkCount":      len(chunkHashes),
+		"fileSize":        size,
+		"message":         "File updated successfully",
+	}, nil
+}
+
+// loadPrivateKeyFromFile 从文件加载私钥
+func (s *Server) loadPrivateKeyFromFile(filePath string) (string, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read private key file: %w", err)
+	}
+
+	var keyMap map[string]string
+	if err := json.Unmarshal(data, &keyMap); err != nil {
+		return "", fmt.Errorf("failed to parse private key file: %w", err)
+	}
+
+	privKey, ok := keyMap["privateKey"]
+	if !ok {
+		return "", fmt.Errorf("private key file missing 'privateKey' field")
+	}
+
+	return privKey, nil
 }

@@ -25,7 +25,8 @@
 
 #### Chameleon Merkle Tree（可编辑）
 - 基于椭圆曲线 P256 的 Chameleon 哈希
-- 支持文件内容修改（需私钥）
+- 支持文件内容修改（需私钥）⭐
+- 文件更新时 CID 保持不变
 - 密钥对自动生成和管理
 - 适合需要版本控制的场景
 
@@ -52,14 +53,15 @@
 
 ### 🌍 HTTP API 服务
 
-完整的 RESTful API，支持文件上传、下载和分片操作：
+完整的 RESTful API，支持文件上传、下载、更新和分片操作：
 
-- **文件管理** - 上传、下载、查询文件信息
+- **文件管理** - 上传、下载、更新、查询文件信息
 - **分片操作** - 按需下载单个分片，支持断点续传
 - **节点管理** - 查看节点信息和对等连接
 - **DHT 操作** - 查询提供者、公告内容
 
 **新功能** ⭐:
+- `POST /api/v1/files/update` - 更新文件（Chameleon 模式）
 - `GET /api/v1/chunks/{hash}/download` - 下载单个分片
 - `GET /api/v1/chunks/{hash}` - 查询分片信息
 
@@ -181,6 +183,16 @@ curl -X POST http://localhost:8080/api/v1/files/upload \
   -F "tree_type=chameleon" \
   -F "description=My file"
 
+# 响应包含 CID、regularRootHash、randomNum、publicKey
+# 更新文件（Chameleon 模式）
+curl -X POST http://localhost:8080/api/v1/files/update \
+  -F "file=@updated.txt" \
+  -F "cid=<原始CID>" \
+  -F "regular_root_hash=<上传时返回的regularRootHash>" \
+  -F "random_num=<上传时返回的randomNum>" \
+  -F "public_key=<上传时返回的publicKey>" \
+  -F "private_key=<私钥>"
+
 # 查询文件信息
 curl http://localhost:8080/api/v1/files/{cid}
 
@@ -259,6 +271,16 @@ network:
 
 storage:
   chunk_path: "files"
+
+# HTTP API 服务配置
+http:
+  port: 8080
+  metadata_storage_path: "metadata"
+
+# 变色龙哈希配置（用于文件更新功能）
+chameleon:
+  private_key: ""                      # 私钥（可选）
+  private_key_file: ""                 # 私钥文件路径（可选）
 
 performance:
   max_concurrency: 16
@@ -497,9 +519,17 @@ run_multinode_tests.bat       # Windows
 
 ---
 
-**当前版本**: v1.1.0 | **最后更新**: 2026-01-21 | **状态**: 生产就绪 ✅
+**当前版本**: v1.2.0 | **最后更新**: 2026-03-03 | **状态**: 生产就绪 ✅
 
 ### 更新日志
+
+#### v1.2.0 (2026-03-03)
+- ⭐ **新增**: 文件更新 API (`POST /api/v1/files/update`)
+- ⭐ **新增**: Chameleon Merkle Tree 文件更新功能 - 更新文件时 CID 保持不变
+- 🔧 **改进**: 元数据结构添加 `RegularRootHash` 字段
+- 🔧 **改进**: 配置系统支持变色龙私钥配置
+- 📝 **新增**: 变色龙哈希更新指南和测试文档
+- ✅ **测试**: 完整的集成测试和测试报告
 
 #### v1.1.0 (2026-01-21)
 - ⭐ **新增**: HTTP API 服务

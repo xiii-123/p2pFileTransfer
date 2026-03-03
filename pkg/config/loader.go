@@ -41,12 +41,13 @@ import (
 
 // Config 包含所有配置项
 type Config struct {
-	Network      NetworkConfig      `mapstructure:"network"`
-	Storage      StorageConfig      `mapstructure:"storage"`
-	Performance  PerformanceConfig  `mapstructure:"performance"`
-	Logging      LoggingConfig      `mapstructure:"logging"`
-	AntiLeecher  AntiLeecherConfig  `mapstructure:"anti_leecher"`
-	HTTP         HTTPConfig         `mapstructure:"http"`
+	Network     NetworkConfig     `mapstructure:"network"`
+	Storage     StorageConfig     `mapstructure:"storage"`
+	Performance PerformanceConfig `mapstructure:"performance"`
+	Logging     LoggingConfig     `mapstructure:"logging"`
+	AntiLeecher AntiLeecherConfig `mapstructure:"anti_leecher"`
+	HTTP        HTTPConfig        `mapstructure:"http"`
+	Chameleon   ChameleonConfig   `mapstructure:"chameleon"`
 }
 
 // HTTPConfig HTTP API配置
@@ -90,10 +91,16 @@ type LoggingConfig struct {
 
 // AntiLeecherConfig 反吸血虫配置
 type AntiLeecherConfig struct {
-	Enabled          bool     `mapstructure:"enabled"`
-	MinSuccessRate   float64  `mapstructure:"min_success_rate"`
-	MinRequests      int      `mapstructure:"min_requests"`
-	BlacklistTimeout int      `mapstructure:"blacklist_timeout"`
+	Enabled          bool    `mapstructure:"enabled"`
+	MinSuccessRate   float64 `mapstructure:"min_success_rate"`
+	MinRequests      int     `mapstructure:"min_requests"`
+	BlacklistTimeout int     `mapstructure:"blacklist_timeout"`
+}
+
+// ChameleonConfig 变色龙哈希配置
+type ChameleonConfig struct {
+	PrivateKey     string `mapstructure:"private_key"`     // 私钥（hex编码）
+	PrivateKeyFile string `mapstructure:"private_key_file"` // 私钥文件路径
 }
 
 // Load 从配置文件加载配置
@@ -179,6 +186,10 @@ func setDefaults(v *viper.Viper) {
 	// HTTP配置默认值
 	v.SetDefault("http.port", 8080)
 	v.SetDefault("http.metadata_path", "metadata")
+
+	// 变色龙哈希配置默认值
+	v.SetDefault("chameleon.private_key", "")
+	v.SetDefault("chameleon.private_key_file", "")
 }
 
 // bindEnvVars 绑定环境变量
@@ -206,12 +217,14 @@ func bindEnvVars(v *viper.Viper) {
 		"performance.dht_timeout":   "DHT_TIMEOUT",
 		"logging.level":             "LOG_LEVEL",
 		"logging.format":            "LOG_FORMAT",
-		"anti_leecher.enabled":      "ANTI_LEECHER_ENABLED",
+		"anti_leecher.enabled":        "ANTI_LEECHER_ENABLED",
 		"anti_leecher.min_success_rate": "MIN_SUCCESS_RATE",
-		"anti_leecher.min_requests": "MIN_REQUESTS",
+		"anti_leecher.min_requests":     "MIN_REQUESTS",
 		"anti_leecher.blacklist_timeout": "BLACKLIST_TIMEOUT",
-		"http.port":                 "HTTP_PORT",
-		"http.metadata_path":        "METADATA_PATH",
+		"http.port":                    "HTTP_PORT",
+		"http.metadata_path":           "METADATA_PATH",
+		"chameleon.private_key":        "CHAMELEON_PRIVATE_KEY",
+		"chameleon.private_key_file":   "CHAMELEON_PRIVATE_KEY_FILE",
 	}
 
 	for configKey, envKey := range bindings {
