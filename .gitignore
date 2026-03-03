@@ -11,9 +11,17 @@ test_results/
 test_*_results.txt
 *.log
 
-# Build artifacts
-*.bat
+# Build artifacts (except build.bat which is needed)
+!build.bat
 *.sh
+
+# Test scripts (all test-related scripts)
+run_multinode_tests.*
+*_test.ps1
+*_test.sh
+*_test.bat
+test*.bat
+test*.sh
 
 # Temporary files
 *.tmp
@@ -22,7 +30,9 @@ test_*_results.txt
 *~
 nul
 
-# Test directories
+# Test directories (all test files are for local development only)
+test/
+tests/
 test_*/
 quick_test/
 
