@@ -120,44 +120,6 @@ GET /api/v1/chunks/{hash}
 
 ---
 
-## 测试方案
-
-### 自动化测试程序
-
-**文件**: `cmd/test_chunk_download/main.go`
-**编译**: `go build -o bin/test_chunk.exe ./cmd/test_chunk_download`
-**运行**: `./bin/test_chunk.exe`
-
-**测试覆盖**:
-1. 单节点基本功能（上传、查询、下载）
-2. 多节点 P2P 下载
-3. 缓存机制验证
-4. 错误处理测试
-
-### PowerShell 测试脚本
-
-**文件**: `test-chunk-download.ps1`
-**运行**: `.\test-chunk-download.ps1`
-
-**特点**:
-- 完全自动化测试流程
-- 彩色输出，易于阅读
-- 自动清理测试环境
-- 适合 Windows 环境
-
-### 手动测试指南
-
-**文件**: `MANUAL_TEST_GUIDE.md`
-
-**包含**:
-- 详细的测试步骤
-- API 使用示例
-- 预期输出说明
-- 故障排查指南
-- 测试检查清单
-
----
-
 ## 使用场景
 
 ### 1. 断点续传

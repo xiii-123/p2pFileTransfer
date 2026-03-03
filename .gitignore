@@ -6,6 +6,8 @@ bin/
 *.dylib
 p2p-server*
 
+doc/
+
 # Test outputs
 test_results/
 test_*_results.txt

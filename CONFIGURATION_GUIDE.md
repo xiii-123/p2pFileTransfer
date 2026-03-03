@@ -190,6 +190,39 @@ anti_leecher:
 | `min_success_rate` | float64 | 0.5 | 最小成功率阈值（0.0-1.0） |
 | `min_requests` | int | 10 | 黑名单前的最小请求数 |
 
+### HTTP API 配置 (http)
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `port` | int | 8080 | HTTP API 服务监听端口 |
+| `metadata_storage_path` | string | "metadata" | 元数据文件存储路径 |
+
+### 变色龙哈希配置 (chameleon)
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `private_key` | string | "" | 全局私钥（十六进制编码，32字节） |
+| `private_key_file` | string | "" | 私钥文件路径（JSON格式，包含privateKey字段） |
+
+**使用说明**：
+- `private_key` 和 `private_key_file` 二选一，推荐使用 `private_key_file`
+- 私钥用于文件更新功能（仅 Chameleon Merkle Tree 模式）
+- 如果配置了私钥，更新文件接口将使用该私钥，无需在请求中传递
+- 生产环境建议使用 `private_key_file` 并设置适当的文件权限
+
+**私钥文件格式**：
+```json
+{
+  "privateKey": "00112233445566778899aabbccddeeff00112233445566778899aabbccdd"
+}
+```
+
+**安全建议**：
+- ⚠️ 私钥文件应设置为仅可读权限（如 `chmod 600 private_key.json`）
+- ⚠️ 不要将私钥文件提交到版本控制系统
+- ⚠️ 生产环境建议使用环境变量或密钥管理系统
+- ⚠️ 定期轮换私钥以提高安全性
+
 ---
 
 ## 环境变量列表

@@ -369,7 +369,7 @@ p2pFileTransfer/
 │   │   └── handlers.go             # API 处理函数
 │   ├── server/
 │   │   └── main.go                 # 服务入口
-│   ├── multinode/                  # 多节点测试工具
+│   ├── multinode/                  # 多节点工具
 │   └── test_chunk_download/        # 分片下载测试程序
 ├── pkg/
 │   ├── p2p/                         # P2P 网络核心
@@ -383,14 +383,9 @@ p2pFileTransfer/
 │   ├── config.yaml                 # 配置文件
 │   └── config.example.yaml         # 配置模板
 ├── docs/                           # 文档目录 ⭐
-│   ├── CHUNK_DOWNLOAD_FEATURE_SUMMARY.md
-│   └── MANUAL_TEST_GUIDE.md
-├── tests/                          # 测试脚本 ⭐
-│   ├── quick-test.ps1              # 快速验证脚本
-│   └── test-chunk-download.ps1     # 完整测试脚本
-├── test/                            # 测试套件
-├── doc/                             # 开发文档
-├── bin/                             # 编译输出
+│   └── CHUNK_DOWNLOAD_FEATURE_SUMMARY.md
+├── doc/                            # 开发文档
+├── bin/                            # 编译输出
 │   ├── api.exe                     # HTTP API 服务器
 │   ├── p2p.exe                     # CLI 工具
 │   └── test_chunk.exe              # 测试程序
@@ -399,7 +394,7 @@ p2pFileTransfer/
 ├── README.md
 ├── API_DOCUMENTATION.md            # API 完整文档
 ├── CONFIGURATION_GUIDE.md
-└── build.bat                        # 构建脚本
+└── build.bat                       # 构建脚本
 ```
 
 ---
@@ -417,7 +412,6 @@ p2pFileTransfer/
 | CLI | Cobra | 命令行框架 |
 | 日志 | logrus | 结构化日志 |
 | 配置 | viper | 配置管理 |
-| 测试 | testify | 测试框架 |
 
 ---
 
@@ -427,11 +421,6 @@ p2pFileTransfer/
 - [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - 完整 API 参考
 - [CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md) - 配置指南
 - [docs/CHUNK_DOWNLOAD_FEATURE_SUMMARY.md](docs/CHUNK_DOWNLOAD_FEATURE_SUMMARY.md) - 分片下载功能说明
-- [docs/MANUAL_TEST_GUIDE.md](docs/MANUAL_TEST_GUIDE.md) - 手动测试指南
-
-### 测试文档
-- [test/README.md](test/README.md) - 测试文档
-- [test/MULTINODE_TESTS.md](test/MULTINODE_TESTS.md) - 多节点测试
 
 ---
 
@@ -449,7 +438,6 @@ p2pFileTransfer/
 
 - Go 1.23+
 - 遵循 Go 代码规范
-- 添加测试用例
 - 更新相关文档
 
 ---
@@ -489,20 +477,16 @@ p2pFileTransfer/
 - ⭐ **新增**: Chameleon Merkle Tree 文件更新功能 - 更新文件时 CID 保持不变
 - 🔧 **改进**: 元数据结构添加 `RegularRootHash` 字段
 - 🔧 **改进**: 配置系统支持变色龙私钥配置
-- 📝 **新增**: 变色龙哈希更新指南和测试文档
-- ✅ **测试**: 完整的集成测试和测试报告
 
 #### v1.1.0 (2026-01-21)
 - ⭐ **新增**: HTTP API 服务
 - ⭐ **新增**: 分片下载功能 - 支持按需下载单个分片
 - ⭐ **新增**: 分片信息查询 API
 - 🔧 **改进**: 自动缓存机制 - P2P 下载的分片自动缓存
-- 📝 **新增**: 完整的 API 文档和测试指南
-- ✅ **测试**: 新增自动化测试脚本
+- 📝 **新增**: 完整的 API 文档
 
 #### v1.0.0 (2026-01-15)
 - 🎉 初始版本发布
 - ✅ CLI 命令行工具
 - ✅ 双 Merkle 树支持（Regular 和 Chameleon）
 - ✅ P2P 网络功能
-- ✅ 完整的测试覆盖

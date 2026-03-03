@@ -295,7 +295,101 @@ func main() {
 8. 保存文件元数据
 9. 返回CID（内容标识符）
 
-#### 2.2 查询文件信息
+**注意**：对于Chameleon模式的文件，响应中还会包含以下字段：
+- `regularRootHash`: 常规Merkle根哈希（十六进制编码）
+- `randomNum`: 随机数（十六进制编码）
+- `publicKey`: 公钥（十六进制编码）
+
+请保存这些参数，它们在更新文件时需要使用。
+
+#### 2.2 更新文件（仅Chameleon模式）
+
+更新已上传的文件内容，使用Chameleon哈希特性确保CID保持不变。
+
+**请求**
+
+```
+POST /api/v1/files/update
+Content-Type: multipart/form-data
+```
+
+**参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| file | File | 是 | 新的文件内容 |
+| cid | String | 是 | 原始文件的CID（上传时返回） |
+| regular_root_hash | String | 是 | 上传时返回的regularRootHash |
+| random_num | String | 是 | 上传时返回的randomNum |
+| public_key | String | 是 | 上传时返回的publicKey |
+| private_key | String | 否* | 私钥（十六进制编码），可在请求中传递或从配置文件读取 |
+
+*注：如果请求中不提供private_key，服务器将从配置文件的`chameleon.private_key`或`chameleon.private_key_file`读取。
+
+**请求示例（cURL）**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/files/update \
+  -F "file=@updated.txt" \
+  -F "cid=a1b2c3d4e5f6..." \
+  -F "regular_root_hash=00112233445566778899..." \
+  -F "random_num=aaaabbbbccccddddeeeeffff..." \
+  -F "public_key=1234567890abcdef..." \
+  -F "private_key=fedcba0987654321..."
+```
+
+**响应示例**
+
+```json
+{
+  "success": true,
+  "data": {
+    "cid": "a1b2c3d4e5f6...",
+    "fileName": "updated.txt",
+    "treeType": "chameleon",
+    "regularRootHash": "ffeeedddbbaa...",
+    "randomNum": "99998888777766665555...",
+    "publicKey": "1234567890abcdef...",
+    "chunkCount": 42,
+    "fileSize": 10737424,
+    "message": "File updated successfully"
+  }
+}
+```
+
+**重要特性**：
+- ✅ **CID保持不变**：更新文件后CID与原始文件相同
+- ✅ **参数自动更新**：`regularRootHash`和`randomNum`会自动更新
+- ✅ **公钥不变**：`publicKey`保持不变，用于验证文件身份
+- ⚠️ **仅Chameleon模式**：此接口仅适用于使用Chameleon Merkle Tree上传的文件
+
+**错误响应**
+
+```json
+{
+  "success": false,
+  "error": "Missing required parameter: regular_root_hash"
+}
+```
+
+```json
+{
+  "success": false,
+  "error": "Failed to update chameleon hash: invalid private key"
+}
+```
+
+**使用场景**：
+- 需要修改已发布的文件内容
+- 需要保持文件标识符（CID）不变
+- 需要版本控制但使用同一个CID
+
+**注意事项**：
+- 必须妥善保管私钥，只有拥有私钥的用户才能更新文件
+- 建议将私钥配置在服务端，而非在每次请求中传递
+- 每次更新都会计算新的随机数以生成哈希碰撞
+
+#### 2.3 查询文件信息
 
 根据CID查询文件的元数据信息。
 
@@ -354,7 +448,7 @@ curl http://localhost:8080/api/v1/files/a1b2c3d4e5f6...
 }
 ```
 
-#### 2.3 下载文件
+#### 2.4 下载文件
 
 根据CID下载完整的文件。
 
