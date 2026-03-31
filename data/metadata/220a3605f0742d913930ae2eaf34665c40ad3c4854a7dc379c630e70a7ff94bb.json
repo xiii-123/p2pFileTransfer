@@ -1,0 +1,15 @@
+{
+  "rootHash": "220a3605f0742d913930ae2eaf34665c40ad3c4854a7dc379c630e70a7ff94bb",
+  "description": "Regular test file",
+  "fileSize": 61,
+  "fileName": "test_regular.txt",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "220a3605f0742d913930ae2eaf34665c40ad3c4854a7dc379c630e70a7ff94bb",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "rootHash": "ee2a5f7593c8537b480540953b83472785b4f97398335819861b4a2f6e80b350",
+  "fileSize": 131072,
+  "fileName": "small.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "ee2a5f7593c8537b480540953b83472785b4f97398335819861b4a2f6e80b350",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

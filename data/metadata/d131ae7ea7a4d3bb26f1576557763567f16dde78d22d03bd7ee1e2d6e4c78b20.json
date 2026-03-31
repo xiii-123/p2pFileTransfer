@@ -1,0 +1,29 @@
+{
+  "rootHash": "d131ae7ea7a4d3bb26f1576557763567f16dde78d22d03bd7ee1e2d6e4c78b20",
+  "fileSize": 1048576,
+  "fileName": "t3.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "9b649966ac1a4c5caec453f66950481979a51cb4f552c74a6a2945149fc0e07d",
+      "index": 0,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "0b829eb18e2deb3f9f8c982d906e5603baa4e327e3c74c90470320bb01bc4869",
+      "index": 1,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "2849793f880b22a147a7c120ed002382fbbf4825ca0d4df01c6ccf9318025c2d",
+      "index": 2,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "e20fb0b7ac89140313988dddd4c773741cb543c772db15ebc5c22e8b88955a74",
+      "index": 3,
+      "chunkSize": 262144
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "rootHash": "6d83a2d2aa03739efac5c344e88359ae84e0d252e181792ff160874c30fd6104",
+  "description": "Test download",
+  "fileSize": 262144,
+  "fileName": "test_download.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "6d83a2d2aa03739efac5c344e88359ae84e0d252e181792ff160874c30fd6104",
+      "chunkSize": 262144
+    }
+  ]
+}

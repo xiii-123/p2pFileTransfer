@@ -1,0 +1,13 @@
+{
+  "rootHash": "83eca0535ed1113a9dcc4acf2d883369e67fd5cd843e62f306ef7d58fa9d09b6",
+  "fileSize": 42,
+  "fileName": "p2p_test_final_small.txt",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "83eca0535ed1113a9dcc4acf2d883369e67fd5cd843e62f306ef7d58fa9d09b6",
+      "chunkSize": 262144
+    }
+  ]
+}

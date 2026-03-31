@@ -1,0 +1,14 @@
+{
+  "rootHash": "e9632fc405da8b59f809d2c043f3d7c284f02719517abf499593d947d54e5b3f",
+  "fileSize": 13,
+  "fileName": "diag.txt",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "e9632fc405da8b59f809d2c043f3d7c284f02719517abf499593d947d54e5b3f",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

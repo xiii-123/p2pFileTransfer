@@ -20,12 +20,14 @@ func sha256Hash(data []byte) ([]byte, error) {
 	}
 	return h.Sum(nil), nil
 }
+// ReadFileToBuffers 读取文件并返回每个 chunk 的 SHA256 hash
+// 修复：返回 hash（32字节）而不是原始数据，避免路径过长问题
 func ReadFileToBuffers(file io.ReadWriter, blockSize uint) ([][]byte, error) {
 	if file == nil {
 		return nil, fmt.Errorf("file is nil")
 	}
 
-	var buffers [][]byte
+	var hashes [][]byte
 	buffer := make([]byte, blockSize)
 
 	for {
@@ -37,21 +39,21 @@ func ReadFileToBuffers(file io.ReadWriter, blockSize uint) ([][]byte, error) {
 			break
 		}
 
-		// 拷贝有效数据，避免复用导致的问题
-		data := make([]byte, n)
-		copy(data, buffer[:n])
-		buffers = append(buffers, data)
+		// 计算 chunk 的 SHA256 hash（32字节）
+		chunkData := buffer[:n]
+		hash := sha256.Sum256(chunkData)
+		hashes = append(hashes, hash[:])
 
 		if err == io.EOF {
 			break
 		}
 	}
 
-	if len(buffers) == 0 {
+	if len(hashes) == 0 {
 		return nil, fmt.Errorf("file is empty")
 	}
 
-	return buffers, nil
+	return hashes, nil
 }
 
 // buildMerkleTreeFromLeafHashes 从叶子哈希构建Merkle树（直接使用已有哈希）

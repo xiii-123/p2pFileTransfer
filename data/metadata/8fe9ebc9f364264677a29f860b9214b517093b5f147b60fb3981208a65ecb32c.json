@@ -1,0 +1,29 @@
+{
+  "rootHash": "8fe9ebc9f364264677a29f860b9214b517093b5f147b60fb3981208a65ecb32c",
+  "fileSize": 1048576,
+  "fileName": "medium.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "9202b50edd9a5ec3b5e43a3174e088634aec8721320f5007683897699d185982",
+      "index": 0,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "d2ed9d24d559bd2e4a42e9b6220b82cf61a62fff5e504642d27d2a30b2beedbd",
+      "index": 1,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "d9cefa30ce9993c56a34d72b968151ceed0053aa05af2a17a275b91deebcab78",
+      "index": 2,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "4b2d17107cd4637471d888c7eacc273160baf6ec67a2fd39414c1a90a3ab2043",
+      "index": 3,
+      "chunkSize": 262144
+    }
+  ]
+}

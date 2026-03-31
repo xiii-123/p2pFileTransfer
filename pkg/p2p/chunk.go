@@ -53,6 +53,17 @@ type RequestMessage struct {
 	ChunkHash string `json:"chunkHash"`
 }
 
+// getChunkPathFromHash 从 hex 字符串获取 chunk 路径（使用子目录分片）
+// 格式: <chunkPath>/<前2字符>/<剩余62字符>
+func getChunkPathFromHash(chunkPath string, hashHex string) string {
+	if len(hashHex) < 4 {
+		return filepath.Join(chunkPath, hashHex)
+	}
+	subDir := hashHex[:2]
+	fileName := hashHex[2:]
+	return filepath.Join(chunkPath, subDir, fileName)
+}
+
 // -----------------------------
 // 客户端方法
 // -----------------------------
@@ -219,7 +230,7 @@ func (p *P2PService) RegisterChunkExistHandler(ctx context.Context) {
 		}
 
 		chunkHash := strings.TrimSpace(req.ChunkHash)
-		filePath := filepath.Join(p.Config.ChunkStoragePath, chunkHash)
+		filePath := getChunkPathFromHash(p.Config.ChunkStoragePath, chunkHash)
 		fileInfo, err := os.Stat(filePath)
 		exists := err == nil && fileInfo.Size() <= MaxChunkSize
 
@@ -273,7 +284,7 @@ func (p *P2PService) RegisterChunkDataHandler(ctx context.Context) {
 			return
 		}
 
-		filePath := filepath.Join(p.Config.ChunkStoragePath, req.ChunkHash)
+		filePath := getChunkPathFromHash(p.Config.ChunkStoragePath, req.ChunkHash)
 		f, err := os.Open(filePath)
 		if err != nil {
 			logrus.Warnf("Chunk %s not found, requested by %s", req.ChunkHash, peerID)

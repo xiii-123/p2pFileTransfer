@@ -1,0 +1,89 @@
+{
+  "rootHash": "f87dc2173ce73da181e74d1eaf9d0aff3443d965791cac07fae0587ea99cd210",
+  "fileSize": 2621440,
+  "fileName": "test_large.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "1a33a7b2bb119e1f5d7b8baef6879ef278b5af11845d972dffa877f47e1d88ae",
+      "index": 0,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "0fa69717df0845a2b4336e8b067be78112ca49cf54645142ff0675cce40aa72d",
+      "index": 1,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "dc2d9c7b92eacdaae375de8a2146875662b132023f696ee1bb28e334d16235e8",
+      "index": 2,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "a21f5b4713af4e56113f201d68e1878508ecb85a2be025b8b407037f8bcf1d54",
+      "index": 3,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "3bf29bf164db795c7630132606dba84e1b6d060aad5e8b77c1ec9f0fcb2f3498",
+      "index": 4,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "63deb3db11b3762e9eff26d839a3db2e95271db3055fd9e4fde29a1aab2d4aaa",
+      "index": 5,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "01e6940ce6b92c6c2cf4abea4101fad983a770f9993c9a60bee93cb4969e1411",
+      "index": 6,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "3c1bbe53535eba9c220e2f0e261f56a4eb6060b9e2b9845c4fa2a88ebe05d640",
+      "index": 7,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "20a3aae5e7eb9cd42a6173164ba1cc44d42edfdb5fefc4596284c946010db508",
+      "index": 8,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "37255ee3f14691c5c28765789f849bfcec0bea0f7c15d911c7bacfa2c8f7baeb",
+      "index": 9,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "20a3aae5e7eb9cd42a6173164ba1cc44d42edfdb5fefc4596284c946010db508",
+      "index": 10,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "37255ee3f14691c5c28765789f849bfcec0bea0f7c15d911c7bacfa2c8f7baeb",
+      "index": 11,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "20a3aae5e7eb9cd42a6173164ba1cc44d42edfdb5fefc4596284c946010db508",
+      "index": 12,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "37255ee3f14691c5c28765789f849bfcec0bea0f7c15d911c7bacfa2c8f7baeb",
+      "index": 13,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "20a3aae5e7eb9cd42a6173164ba1cc44d42edfdb5fefc4596284c946010db508",
+      "index": 14,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "37255ee3f14691c5c28765789f849bfcec0bea0f7c15d911c7bacfa2c8f7baeb",
+      "index": 15,
+      "chunkSize": 262144
+    }
+  ]
+}

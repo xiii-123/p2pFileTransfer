@@ -23,9 +23,19 @@ type Server struct {
 
 // NewServer 创建新的HTTP服务器
 func NewServer(cfg *config.Config) (*Server, error) {
-	// 创建P2P服务
+	// 创建P2P服务配置，使用配置文件中的值
 	ctx := context.Background()
-	p2pSvc, err := p2p.NewP2PService(ctx, p2p.NewP2PConfig())
+	p2pCfg := p2p.NewP2PConfig()
+	// 使用配置文件中的存储路径，而不是硬编码的默认值
+	p2pCfg.ChunkStoragePath = cfg.Storage.ChunkPath
+	// 可选：也可以使用配置文件中的其他值
+	// p2pCfg.MaxRetries = cfg.Performance.MaxRetries
+	// p2pCfg.MaxConcurrency = cfg.Performance.MaxConcurrency
+	// p2pCfg.RequestTimeout = cfg.Performance.RequestTimeout
+	// p2pCfg.DataTimeout = cfg.Performance.DataTimeout
+	// p2pCfg.DHTTimeout = cfg.Performance.DHTTimeout
+
+	p2pSvc, err := p2p.NewP2PService(ctx, p2pCfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create P2P service: %w", err)
 	}

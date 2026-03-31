@@ -34,9 +34,9 @@ network:
 
 # 存储配置 / Storage Configuration
 storage:
-  # Chunk 存储路径
-  # Chunk storage path
-  chunk_path: "files"
+  # Chunk 存储路径（使用绝对路径避免路径问题）
+  # Chunk storage path (use absolute path to avoid path issues)
+  chunk_path: "D:/Work-Files/p2pFileTransfer/data/chunks"
 
   # Merkle 树块大小（字节）
   # Merkle tree block size in bytes
@@ -45,6 +45,16 @@ storage:
   # 缓冲区数量
   # Buffer number
   buffer_number: 16
+
+# HTTP API 配置 / HTTP API Configuration
+http:
+  # HTTP服务端口
+  # HTTP server port
+  port: 8880
+
+  # 元数据存储路径（使用绝对路径避免路径问题）
+  # Metadata storage path (use absolute path to avoid path issues)
+  metadata_path: "D:/Work-Files/p2pFileTransfer/data/metadata"
 
 # 性能配置 / Performance Configuration
 performance:
@@ -104,4 +114,5 @@ chameleon:
   # 文件应包含: {"privateKey": "hex编码的私钥"}
   # Private key file path (recommended)
   # File should contain: {"privateKey": "hex-encoded private key"}
-  private_key_file: ""
+  private_key_file: "chameleon_key.json"
+ggit

@@ -41,6 +41,8 @@ quick_test/
 # Metadata and private keys (sensitive data)
 metadata/*.json
 metadata/*.key
+chameleon_key.json
+generate_keys.go
 
 # Test reports
 TEST_REPORT.md

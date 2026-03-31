@@ -1,0 +1,17 @@
+{
+  "rootHash": "e6fcb9319223b00e1b994413d7b408b06f1d91c7963035dcadf6fa359903b547",
+  "regularRootHash": "8dc41e9d452fc7cee64fd1304e95b4faeae9f0ba737d1a7c55c488a73a256d6e",
+  "randomNum": "28a4cf285c5b05080f9929ec52ed6415de8724616358e321284877fcca0ce061ba54079dd8a19987d1a14685a18e9790f8a6563b7ac31333ca077af0f9f695aa846e47c5305453bf3ee8d55b108f96d6b521e4839d3253f682d41baca2581526",
+  "publicKey": "b2abd8fa7cfe055033c7c7fc8e2cd3ad4937def5a98af814e10cdcd3bc52d5837b5189f5c40bc5a04eaf74369b217c9e3fba734ea8072f1d0296e39dc84609a5",
+  "description": "Test5",
+  "fileSize": 131072,
+  "fileName": "test5.dat",
+  "encryption": "none",
+  "treeType": "chameleon",
+  "leaves": [
+    {
+      "chunkHash": "8dc41e9d452fc7cee64fd1304e95b4faeae9f0ba737d1a7c55c488a73a256d6e",
+      "chunkSize": 262144
+    }
+  ]
+}

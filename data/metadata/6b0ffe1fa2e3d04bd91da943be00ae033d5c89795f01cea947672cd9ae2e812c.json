@@ -1,0 +1,18 @@
+{
+  "rootHash": "6b0ffe1fa2e3d04bd91da943be00ae033d5c89795f01cea947672cd9ae2e812c",
+  "description": "Test regular upload",
+  "fileSize": 524288,
+  "fileName": "test_regular.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "903a50154d957b66e9d0b90a0672e30e7c44cadb019cbe7b146c8ba4608036c9",
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "961e2b7da9993707e0471f75fda0e463ddee60bbc02a0f1f48afe203c6225111",
+      "chunkSize": 262144
+    }
+  ]
+}

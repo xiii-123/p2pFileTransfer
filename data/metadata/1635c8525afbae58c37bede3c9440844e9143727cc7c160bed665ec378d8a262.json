@@ -1,0 +1,14 @@
+{
+  "rootHash": "1635c8525afbae58c37bede3c9440844e9143727cc7c160bed665ec378d8a262",
+  "fileSize": 8,
+  "fileName": "t1.txt",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "1635c8525afbae58c37bede3c9440844e9143727cc7c160bed665ec378d8a262",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

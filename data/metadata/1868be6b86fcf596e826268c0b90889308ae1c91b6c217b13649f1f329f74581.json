@@ -1,0 +1,29 @@
+{
+  "rootHash": "1868be6b86fcf596e826268c0b90889308ae1c91b6c217b13649f1f329f74581",
+  "fileSize": 1048576,
+  "fileName": "test3.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "595e477bf2123a233c10f3e9713b2f0e4ba8c4bba49f6623f261f74fc0f79527",
+      "index": 0,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "a95f687ddd8365985a16211abb869c863a2609fc9a1cdf3f908d78e2391e1562",
+      "index": 1,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "ba3f34db139472e970dbcfbe5e86ab19cf3e43ca9b3e8b12567a01b70c62e926",
+      "index": 2,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "f5621111f2ae91f9dc625fa8208a97783c883779a0132c334247a7aac195892d",
+      "index": 3,
+      "chunkSize": 262144
+    }
+  ]
+}

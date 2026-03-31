@@ -1,0 +1,17 @@
+{
+  "rootHash": "fe73783ff3b372dea6ab345cd37ccb7772f9e7b50de0a3f734b7ec3d0c49d394",
+  "regularRootHash": "6e3d2b865e92b7b0ea8384a5c70873ccd114928aea10900e534a5179e4c4b396",
+  "randomNum": "60ea8058b36e20ad4456fe2075325e5ad4ecd0f7175b84c891acd2e46f7d93368b81f3591d487a1d396de66cf1c40e6e24fe14ef34c9e11fa6b0f88cd256df96af213577c202e48fdff0158ebb2c4fe09c63e06b8a57676c0d5023a9ffce84c1",
+  "publicKey": "3e2ea5db853885c4012af9e8281dc3b09f1fe261c9d9f1104c4fbe041b0043b47cbdc98a91303d44a43092427ecb2312fe436dec59724730409809cbddbd83e0",
+  "fileSize": 21,
+  "fileName": "file1.txt",
+  "encryption": "none",
+  "treeType": "chameleon",
+  "leaves": [
+    {
+      "chunkHash": "6e3d2b865e92b7b0ea8384a5c70873ccd114928aea10900e534a5179e4c4b396",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

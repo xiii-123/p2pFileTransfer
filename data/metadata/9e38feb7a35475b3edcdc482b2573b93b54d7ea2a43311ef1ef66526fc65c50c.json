@@ -1,0 +1,14 @@
+{
+  "rootHash": "9e38feb7a35475b3edcdc482b2573b93b54d7ea2a43311ef1ef66526fc65c50c",
+  "fileSize": 13,
+  "fileName": "final_test1.txt",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "9e38feb7a35475b3edcdc482b2573b93b54d7ea2a43311ef1ef66526fc65c50c",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

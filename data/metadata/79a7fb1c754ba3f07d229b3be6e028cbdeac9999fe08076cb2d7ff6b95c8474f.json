@@ -1,0 +1,14 @@
+{
+  "rootHash": "79a7fb1c754ba3f07d229b3be6e028cbdeac9999fe08076cb2d7ff6b95c8474f",
+  "fileSize": 16,
+  "fileName": "simple_test.txt",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "79a7fb1c754ba3f07d229b3be6e028cbdeac9999fe08076cb2d7ff6b95c8474f",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

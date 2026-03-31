@@ -1,0 +1,17 @@
+{
+  "rootHash": "3d6aaeaeefe40df11ec3936cc5a14e7da2d0fab3918a954e86d999852000786a",
+  "regularRootHash": "b938c5f7f5261bf00960876172c04a1d8a0630cd4e768c74f01520e9345770aa",
+  "randomNum": "6fe18a97915def34029ce01fce231ca227b5801b6662761b3748cffbb94711deb748ae9145aa19f322b616711da924409a2e2441a560affd1eafd6f03877872c94438ba9955890f9be3367b77656d37ad9166c61c5516bc4a81799fdf0fe1e1d",
+  "publicKey": "a5d6dc391db3f50aa280f73198a2f6887828106580ae3d9f316ef1ab754ad5cbcefcad82a74f3697d3d6292b5fe1c38385d9c5a2d6be1977d6c87ade6b91e187",
+  "fileSize": 27,
+  "fileName": "mod1.txt",
+  "encryption": "none",
+  "treeType": "chameleon",
+  "leaves": [
+    {
+      "chunkHash": "b938c5f7f5261bf00960876172c04a1d8a0630cd4e768c74f01520e9345770aa",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

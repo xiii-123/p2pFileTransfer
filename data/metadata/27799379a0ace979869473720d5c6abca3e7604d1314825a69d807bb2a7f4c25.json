@@ -1,0 +1,18 @@
+{
+  "rootHash": "27799379a0ace979869473720d5c6abca3e7604d1314825a69d807bb2a7f4c25",
+  "regularRootHash": "20393955050bc1463c18a3945f866cd5bed8ca0892719a076af85f4d7a46f40b",
+  "randomNum": "82c599e0a1514057be42a8979761213e8d182f275f0154bcdef9e37caf4ed8af475ac79f04bf68304adc06dd552d7a6ef27dd0174128b69490252629cdde03d1c1860ef18d6039f9372ef07e2f516a0e945bacb19788765388333282377ce4eb",
+  "publicKey": "b9d8fbd59b3dbd954adc49f07c2796b05a03e9e5540ddfb217fb1bc61ea3f69f380bd24dce29ac9217e304d965aca1830a0a5b14812f0c676dfcc70cee6ceb4f",
+  "description": "Chameleon test file",
+  "fileSize": 43,
+  "fileName": "test_chameleon_modified.txt",
+  "encryption": "none",
+  "treeType": "chameleon",
+  "leaves": [
+    {
+      "chunkHash": "20393955050bc1463c18a3945f866cd5bed8ca0892719a076af85f4d7a46f40b",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

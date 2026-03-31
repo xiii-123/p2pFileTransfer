@@ -1,0 +1,19 @@
+{
+  "rootHash": "8601a51093276971ce8f3a482bee8fb4fd2fed756ef575be437ccf7b3d0061d1",
+  "fileSize": 524288,
+  "fileName": "t2.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "97519731b81fa8abc2c86640e6926d753c4639c6fec575ecce5b36f45c702c3c",
+      "index": 0,
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "a2eb020deece8c6973977d5091c97c3d4ea2cd5986b5885e9ab9aeb86dea2b4e",
+      "index": 1,
+      "chunkSize": 262144
+    }
+  ]
+}

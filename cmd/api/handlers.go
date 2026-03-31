@@ -28,6 +28,39 @@ const (
 	DefaultBufferNumber = 16
 )
 
+// getChunkPath 返回 chunk 的存储路径，使用子目录分片避免路径过长
+// 格式: <chunkPath>/<前2字符>/<剩余62字符>
+// 例如: chunks/ab/cdef...1234
+// 同时自动创建所需的子目录
+func getChunkPath(chunkPath string, chunkHash []byte) (string, error) {
+	hashHex := hex.EncodeToString(chunkHash)
+	if len(hashHex) < 4 {
+		// 如果 hash 太短，直接使用原路径
+		return filepath.Join(chunkPath, hashHex), nil
+	}
+	// 使用前2字符作为子目录
+	subDir := hashHex[:2]
+	fileName := hashHex[2:]
+	chunkDir := filepath.Join(chunkPath, subDir)
+
+	// 确保子目录存在
+	if err := os.MkdirAll(chunkDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create chunk directory %s: %w", chunkDir, err)
+	}
+
+	return filepath.Join(chunkDir, fileName), nil
+}
+
+// getChunkPathFromHash 从 hex 字符串获取 chunk 路径（用于读取）
+func getChunkPathFromHash(chunkPath string, hashHex string) string {
+	if len(hashHex) < 4 {
+		return filepath.Join(chunkPath, hashHex)
+	}
+	subDir := hashHex[:2]
+	fileName := hashHex[2:]
+	return filepath.Join(chunkPath, subDir, fileName)
+}
+
 // APIResponse 统一的API响应格式
 type APIResponse struct {
 	Success bool        `json:"success"`
@@ -181,8 +214,11 @@ func (s *Server) uploadFileChameleon(ctx context.Context, fileReader io.Reader, 
 		}
 		chunkData := buffer[:n]
 
-		// 保存chunk到文件
-		chunkFile := filepath.Join(chunkPath, hex.EncodeToString(chunkHash))
+		// 保存chunk到文件（使用子目录分片）
+		chunkFile, err := getChunkPath(chunkPath, chunkHash)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get chunk path %d: %w", i, err)
+		}
 		if err := os.WriteFile(chunkFile, chunkData, 0644); err != nil {
 			return nil, fmt.Errorf("failed to save chunk %d: %w", i, err)
 		}
@@ -284,8 +320,11 @@ func (s *Server) uploadFileRegular(ctx context.Context, fileReader io.Reader, fi
 		}
 		chunkData := buffer[:n]
 
-		// 保存chunk到文件
-		chunkFile := filepath.Join(chunkPath, hex.EncodeToString(chunkHash))
+		// 保存chunk到文件（使用子目录分片）
+		chunkFile, err := getChunkPath(chunkPath, chunkHash)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get chunk path %d: %w", i, err)
+		}
 		if err := os.WriteFile(chunkFile, chunkData, 0644); err != nil {
 			return nil, fmt.Errorf("failed to save chunk %d: %w", i, err)
 		}
@@ -425,17 +464,31 @@ func (s *Server) handleFileDownload(w http.ResponseWriter, r *http.Request) {
 func (s *Server) downloadFromLocalChunks(w http.ResponseWriter, metadata *file.MetaData) error {
 	chunkPath := s.config.Storage.ChunkPath
 
-	// 读取所有chunk并组装
-	for _, leaf := range metadata.Leaves {
-		chunkFile := filepath.Join(chunkPath, hex.EncodeToString(leaf.ChunkHash))
+	// 创建副本并按索引排序，确保顺序正确
+	leaves := make([]file.ChunkData, len(metadata.Leaves))
+	copy(leaves, metadata.Leaves)
+
+	// 按 Index 排序（冒泡排序或使用 sort 包）
+	for i := 0; i < len(leaves); i++ {
+		for j := i + 1; j < len(leaves); j++ {
+			if leaves[i].Index > leaves[j].Index {
+				leaves[i], leaves[j] = leaves[j], leaves[i]
+			}
+		}
+	}
+
+	// 读取所有chunk并组装（按排序后的顺序）
+	for _, leaf := range leaves {
+		chunkFile := getChunkPathFromHash(chunkPath, hex.EncodeToString(leaf.ChunkHash))
 		data, err := os.ReadFile(chunkFile)
 		if err != nil {
-			return fmt.Errorf("failed to read chunk %s from %s: %w", hex.EncodeToString(leaf.ChunkHash), chunkFile, err)
+			return fmt.Errorf("failed to read chunk %d (hash=%s) from %s: %w",
+				leaf.Index, hex.EncodeToString(leaf.ChunkHash)[:16], chunkFile, err)
 		}
 
 		// 写入响应
 		if _, err := w.Write(data); err != nil {
-			return fmt.Errorf("failed to write chunk: %w", err)
+			return fmt.Errorf("failed to write chunk %d: %w", leaf.Index, err)
 		}
 	}
 
@@ -716,7 +769,7 @@ func (s *Server) handleChunkDownload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.bin\"", chunkHash))
 
 	// 优先从本地存储读取
-	chunkPath := filepath.Join(s.config.Storage.ChunkPath, chunkHash)
+	chunkPath := getChunkPathFromHash(s.config.Storage.ChunkPath, chunkHash)
 	data, err := os.ReadFile(chunkPath)
 	if err == nil {
 		// 本地存在，直接返回
@@ -819,7 +872,7 @@ func (s *Server) handleChunkInfo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// 检查本地是否存在
-	chunkPath := filepath.Join(s.config.Storage.ChunkPath, chunkHash)
+	chunkPath := getChunkPathFromHash(s.config.Storage.ChunkPath, chunkHash)
 	info := make(map[string]interface{})
 	info["hash"] = chunkHash
 
@@ -853,11 +906,12 @@ func (s *Server) handleChunkInfo(w http.ResponseWriter, r *http.Request) {
 
 // 辅助函数
 
-// convertToChunkData 转换哈希列表为ChunkData
+// convertToChunkData 转换哈希列表为ChunkData，保存索引确保顺序
 func convertToChunkData(hashes [][]byte, chunkSize int) []file.ChunkData {
 	chunks := make([]file.ChunkData, len(hashes))
 	for i, hash := range hashes {
 		chunks[i] = file.ChunkData{
+			Index:     i,          // ← 保存索引
 			ChunkSize: chunkSize,
 			ChunkHash: hash,
 		}
@@ -908,9 +962,12 @@ func (s *Server) handleFileUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logrus.Infof("[FileUpdate] Received update request from %s", r.RemoteAddr)
+
 	// 解析表单
 	err := r.ParseMultipartForm(MaxUploadSize)
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to parse multipart form: %v", err)
 		s.respondError(w, http.StatusBadRequest, fmt.Sprintf("Failed to parse form: %v", err))
 		return
 	}
@@ -918,35 +975,46 @@ func (s *Server) handleFileUpdate(w http.ResponseWriter, r *http.Request) {
 	// 获取文件
 	file, header, err := r.FormFile("file")
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to get file from form: %v", err)
 		s.respondError(w, http.StatusBadRequest, fmt.Sprintf("Failed to get file: %v", err))
 		return
 	}
 	defer file.Close()
 
+	logrus.Infof("[FileUpdate] File received: %s, size: %d", header.Filename, header.Size)
+
 	// 获取必需参数
 	cid := r.FormValue("cid")
 	if cid == "" {
+		logrus.Warn("[FileUpdate] Missing required parameter: cid")
 		s.respondError(w, http.StatusBadRequest, "CID is required")
 		return
 	}
+	logrus.Infof("[FileUpdate] CID: %s", cid)
 
 	regularRootHash := r.FormValue("regular_root_hash")
 	if regularRootHash == "" {
+		logrus.Warn("[FileUpdate] Missing required parameter: regular_root_hash")
 		s.respondError(w, http.StatusBadRequest, "regular_root_hash is required")
 		return
 	}
+	logrus.Infof("[FileUpdate] RegularRootHash: %s (len=%d)", regularRootHash, len(regularRootHash))
 
 	randomNumStr := r.FormValue("random_num")
 	if randomNumStr == "" {
+		logrus.Warn("[FileUpdate] Missing required parameter: random_num")
 		s.respondError(w, http.StatusBadRequest, "random_num is required")
 		return
 	}
+	logrus.Infof("[FileUpdate] RandomNum: %s (len=%d)", randomNumStr, len(randomNumStr))
 
 	publicKeyStr := r.FormValue("public_key")
 	if publicKeyStr == "" {
+		logrus.Warn("[FileUpdate] Missing required parameter: public_key")
 		s.respondError(w, http.StatusBadRequest, "public_key is required")
 		return
 	}
+	logrus.Infof("[FileUpdate] PublicKey: %s (len=%d)", publicKeyStr, len(publicKeyStr))
 
 	// 获取私钥（优先从请求参数，其次从配置文件）
 	privKey := r.FormValue("private_key")
@@ -956,6 +1024,7 @@ func (s *Server) handleFileUpdate(w http.ResponseWriter, r *http.Request) {
 			// 从文件读取
 			loadedKey, err := s.loadPrivateKeyFromFile(s.config.Chameleon.PrivateKeyFile)
 			if err != nil {
+				logrus.Errorf("[FileUpdate] Failed to load private key from file: %v", err)
 				s.respondError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to load private key: %v", err))
 				return
 			}
@@ -964,17 +1033,22 @@ func (s *Server) handleFileUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if privKey == "" {
+		logrus.Warn("[FileUpdate] Missing required parameter: private_key")
 		s.respondError(w, http.StatusBadRequest, "private_key is required (either in request or config)")
 		return
 	}
+	logrus.Infof("[FileUpdate] PrivateKey provided (len=%d)", len(privKey))
 
 	// 调用更新逻辑
+	logrus.Info("[FileUpdate] Calling updateFileChameleon...")
 	result, err := s.updateFileChameleon(r.Context(), file, header.Filename, cid, regularRootHash, randomNumStr, publicKeyStr, privKey)
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Update failed: %v", err)
 		s.respondError(w, http.StatusInternalServerError, fmt.Sprintf("Update failed: %v", err))
 		return
 	}
 
+	logrus.Infof("[FileUpdate] File updated successfully: %s", cid)
 	s.respondSuccess(w, result)
 }
 
@@ -985,64 +1059,87 @@ func (s *Server) updateFileChameleon(
 	fileName, cid, regularRootHashStr, randomNumStr, publicKeyStr, privKeyStr string,
 ) (map[string]interface{}, error) {
 
+	logrus.Info("[FileUpdate] Starting updateFileChameleon")
+
 	// 1. 解码参数
+	logrus.Debugf("[FileUpdate] Decoding private key (len=%d)", len(privKeyStr))
 	privKey, err := hex.DecodeString(privKeyStr)
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to decode private key: %v (input='%s')", err, privKeyStr)
 		return nil, fmt.Errorf("invalid private key format: %w", err)
 	}
 
+	logrus.Debugf("[FileUpdate] Decoding regularRootHash (len=%d)", len(regularRootHashStr))
 	regularRootHash, err := hex.DecodeString(regularRootHashStr)
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to decode regularRootHash: %v (input='%s')", err, regularRootHashStr)
 		return nil, fmt.Errorf("invalid regular_root_hash format: %w", err)
 	}
 
+	logrus.Debugf("[FileUpdate] Decoding randomNum (len=%d)", len(randomNumStr))
 	randomNumBytes, err := hex.DecodeString(randomNumStr)
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to decode randomNum: %v (input='%s')", err, randomNumStr)
 		return nil, fmt.Errorf("invalid random_num format: %w", err)
 	}
 
+	logrus.Debugf("[FileUpdate] Decoding publicKey (len=%d)", len(publicKeyStr))
 	publicKeyBytes, err := hex.DecodeString(publicKeyStr)
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to decode publicKey: %v (input='%s')", err, publicKeyStr)
 		return nil, fmt.Errorf("invalid public_key format: %w", err)
 	}
 
 	// 2. 反序列化参数
+	logrus.Info("[FileUpdate] Deserializing public key")
 	pubKey, err := chameleonMerkleTree.DeserializeChameleonPubKey(publicKeyBytes)
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to deserialize public key: %v", err)
 		return nil, fmt.Errorf("failed to deserialize public key: %w", err)
 	}
 
+	logrus.Info("[FileUpdate] Deserializing random number")
 	randomNum, err := chameleonMerkleTree.DeserializeChameleonRandomNum(randomNumBytes)
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to deserialize random number: %v", err)
 		return nil, fmt.Errorf("failed to deserialize random number: %w", err)
 	}
 
 	// 3. 创建临时文件
+	logrus.Info("[FileUpdate] Creating temp file")
 	tmpFile, err := os.CreateTemp("", "update-*.tmp")
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to create temp file: %v", err)
 		return nil, fmt.Errorf("failed to create temp file: %w", err)
 	}
 	defer os.Remove(tmpFile.Name())
 	defer tmpFile.Close()
 
 	// 4. 写入新文件内容
+	logrus.Info("[FileUpdate] Writing new file content")
 	size, err := io.Copy(tmpFile, fileReader)
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to write file: %v", err)
 		return nil, fmt.Errorf("failed to write file: %w", err)
 	}
+	logrus.Infof("[FileUpdate] File written: %d bytes", size)
 
 	// 5. 重置文件指针
 	if _, err := tmpFile.Seek(0, 0); err != nil {
+		logrus.Errorf("[FileUpdate] Failed to seek file: %v", err)
 		return nil, fmt.Errorf("failed to seek file: %w", err)
 	}
 
 	// 6. 获取 CID（变色龙哈希）
+	logrus.Debugf("[FileUpdate] Decoding CID (len=%d)", len(cid))
 	cidBytes, err := hex.DecodeString(cid)
 	if err != nil {
+		logrus.Errorf("[FileUpdate] Failed to decode CID: %v (input='%s')", err, cid)
 		return nil, fmt.Errorf("invalid CID format: %w", err)
 	}
 
 	// 7. 调用 UpdateChameleonMerkleTree
+	logrus.Info("[FileUpdate] Calling UpdateChameleonMerkleTree")
 	config := &chameleonMerkleTree.MerkleConfig{
 		BlockSize:    DefaultBlockSize,
 		BufferNumber: DefaultBufferNumber,
@@ -1089,8 +1186,11 @@ func (s *Server) updateFileChameleon(
 		}
 		chunkData := buffer[:n]
 
-		// 保存chunk到文件
-		chunkFile := filepath.Join(chunkPath, hex.EncodeToString(chunkHash))
+		// 保存chunk到文件（使用子目录分片）
+		chunkFile, err := getChunkPath(chunkPath, chunkHash)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get chunk path %d: %w", i, err)
+		}
 		if err := os.WriteFile(chunkFile, chunkData, 0644); err != nil {
 			return nil, fmt.Errorf("failed to save chunk %d: %w", i, err)
 		}

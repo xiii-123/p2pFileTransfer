@@ -1,0 +1,14 @@
+{
+  "rootHash": "f456d70f5903c4c2db99428c84aed0d696b1e721a543798d78bd95aa24a3a4ba",
+  "fileSize": 262144,
+  "fileName": "test_boundary.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "f456d70f5903c4c2db99428c84aed0d696b1e721a543798d78bd95aa24a3a4ba",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

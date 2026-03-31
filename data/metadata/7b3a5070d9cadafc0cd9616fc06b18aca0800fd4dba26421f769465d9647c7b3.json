@@ -1,0 +1,25 @@
+{
+  "rootHash": "7b3a5070d9cadafc0cd9616fc06b18aca0800fd4dba26421f769465d9647c7b3",
+  "fileSize": 1048576,
+  "fileName": "p2p_test_final_1mb.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "64deb62ff17b866b94c3712c9086fbff798a2b6e4e5f639fa47795585ac35b25",
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "d61339b9cd0f757182f58758c5987fe2b5e3c5b33e3a0ebc9149fac4a5442515",
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "7b490c3007b9fd6ad8e2d7f44b94a278a380ad06d353027237bed06533171ecd",
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "b29b9cc626147915ec8f00f7a28749ab58e9e3791e3800b5b5e7195394630242",
+      "chunkSize": 262144
+    }
+  ]
+}

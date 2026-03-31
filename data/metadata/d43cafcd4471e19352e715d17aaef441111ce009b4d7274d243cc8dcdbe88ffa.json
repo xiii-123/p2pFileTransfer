@@ -1,0 +1,18 @@
+{
+  "rootHash": "d43cafcd4471e19352e715d17aaef441111ce009b4d7274d243cc8dcdbe88ffa",
+  "description": "Test1",
+  "fileSize": 524288,
+  "fileName": "test1.dat",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "0b356233509162d44ff33c17505573b609fa90bf1b5bfba731db8e5a8556ce1f",
+      "chunkSize": 262144
+    },
+    {
+      "chunkHash": "a53d4c70f6ea8ac40c057561d7a94109649dfd24536c0c6a45ce1fe1bcca1601",
+      "chunkSize": 262144
+    }
+  ]
+}

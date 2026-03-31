@@ -1,0 +1,14 @@
+{
+  "rootHash": "4b68ab3847feda7d6c62c1fbcbeebfa35eab7351ed5e78f4ddadea5df64b8015",
+  "fileSize": 1,
+  "fileName": "verify1.txt",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "4b68ab3847feda7d6c62c1fbcbeebfa35eab7351ed5e78f4ddadea5df64b8015",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "rootHash": "4347d2feb8ef5b8932430cbffa68f7b7d3ead46e8f20ae02a90451bb869116e6",
+  "fileSize": 15,
+  "fileName": "verify_test.txt",
+  "encryption": "none",
+  "treeType": "regular",
+  "leaves": [
+    {
+      "chunkHash": "4347d2feb8ef5b8932430cbffa68f7b7d3ead46e8f20ae02a90451bb869116e6",
+      "index": 0,
+      "chunkSize": 262144
+    }
+  ]
+}
